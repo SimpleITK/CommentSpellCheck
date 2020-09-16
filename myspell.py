@@ -7,19 +7,19 @@ from enchant import DictWithPWL
 
 
 def myspell(fname):
-  my_dict = DictWithPWL('en_US', 'mywords.txt')
-  print(my_dict)
+    my_dict = DictWithPWL('en_US', 'mywords.txt')
+    print(my_dict)
 
-  spell_checker = SpellChecker(my_dict, filters = [EmailFilter, URLFilter])
+    spell_checker = SpellChecker(my_dict, filters = [EmailFilter, URLFilter])
 
-  fp = open(fname, 'r')
+    fp = open(fname, 'r')
 
-  lc = 1
-  for x in fp:
-    spell_checker.set_text(x)
-    for error in spell_checker:
-      print("Error:", error.word, lc)
-    lc = lc+1
+    lc = 1
+    for x in fp:
+      spell_checker.set_text(x)
+      for error in spell_checker:
+        print("Error:", error.word, lc)
+      lc = lc+1
 
 
 #myspell('/Users/dchen/SimpleITK/Documentation/docs/source/faq.rst')
