@@ -10,11 +10,11 @@ from enchant import DictWithPWL
 from comment_parser import comment_parser
 
 
-src_file = '/Users/dchen/SimpleITK/Code/Common/include/sitkImage.h'
+image_h = '/Users/dchen/SimpleITK/Code/Common/include/sitkImage.h'
 
 
 
-def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=1):
+def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=1, prefixes=[]):
 
     # Returns a list of comment_parser.parsers.common.Comments
     clist = comment_parser.extract_comments(filename, mime=mimetype)
@@ -24,13 +24,24 @@ def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=
     for c in clist:
         mistakes=[]
         spell_checker.set_text(c.text())
+
         for error in spell_checker:
+
+            for pre in prefixes:
+                if error.word.startswith(pre):
+                    l = len(pre)
+                    wrd = error.word[l:]
+                    print("Trying without prefix: ", wrd)
+                    if spell_checker.check(wrd):
+                        continue
+
             if output_lvl > 1:
                 msg = 'error: '+ '\'' + error.word +'\', ' + 'suggestions: ' \
                       + str(spell_checker.suggest())
             else:
                 msg = error.word
             mistakes.append(msg)
+
         if len(mistakes):
             if output_lvl > 0:
                 print("\nLine number", c.line_number())
@@ -97,7 +108,20 @@ if __name__ == '__main__':
     if args.miss:
         output_lvl = -1
 
-    bad_words = spell_check_file(src_file, spell_checker, output_lvl=output_lvl)
+    file_list = []
+    if len(args.filenames):
+        file_list = args.filenames
+    else:
+        file_list.append(image_h)
+
+    bad_words = []
+
+    for f in file_list:
+        if not args.miss:
+            print("\nChecking", f)
+        result = spell_check_file(f, spell_checker, output_lvl=output_lvl,
+                                  prefixes=['sitk', 'itk'])
+        bad_words = sorted(bad_words+result)
 
 
     if not args.miss:
