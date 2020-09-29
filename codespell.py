@@ -1,5 +1,7 @@
 #! /usr/bin/env
 
+import os
+import glob
 import sys
 import argparse
 
@@ -13,8 +15,29 @@ from comment_parser import comment_parser
 image_h = '/Users/dchen/SimpleITK/Code/Common/include/sitkImage.h'
 
 
+def splitCamelCase(word):
+
+    result = []
+
+    current_word = ""
+
+    for x in word:
+        if x.isupper():
+            if current_word != "":
+                result.append(current_word)
+            current_word = ""
+        current_word = current_word+x
+
+    if len(current_word):
+        result.append(current_word)
+
+    return result
+
 
 def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=1, prefixes=[]):
+
+    if output_lvl>0:
+        print("spell_check_file:", filename, ",", mimetype)
 
     # Returns a list of comment_parser.parsers.common.Comments
     clist = comment_parser.extract_comments(filename, mime=mimetype)
@@ -27,13 +50,30 @@ def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=
 
         for error in spell_checker:
 
+            # Check if the bad word starts with a prefix.
+            # If so, spell check the word without that prefix.
+            #
             for pre in prefixes:
                 if error.word.startswith(pre):
                     l = len(pre)
                     wrd = error.word[l:]
-                    print("Trying without prefix: ", wrd)
+                    if output_lvl>1:
+                        print("Trying without prefix: ", wrd)
                     if spell_checker.check(wrd):
                         continue
+
+            # Try splitting camel case words and checking each sub-word
+
+            if output_lvl>1:
+                print("Trying splitting camel case word")
+            sub_words = splitCamelCase(error.word)
+            if len(sub_words) > 1:
+                ok_flag = True
+                for s in sub_words:
+                    if not spell_checker.check(s):
+                        ok_flag = False
+                if ok_flag:
+                    continue
 
             if output_lvl > 1:
                 msg = 'error: '+ '\'' + error.word +'\', ' + 'suggestions: ' \
@@ -52,7 +92,14 @@ def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=
                     print("   ", m)
                 bad_words.add(m)
 
-    return sorted(bad_words)
+    bad_words = sorted(bad_words)
+
+    if output_lvl>1:
+        print("\nResults")
+        for x in bad_words:
+            print(x)
+
+    return bad_words
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -71,6 +118,9 @@ def parse_args():
     parser.add_argument('--miss', '-m', action='store_true', default=False,
         dest='miss', help='Only output the misspelt words')
 
+    parser.add_argument('--suffix', '-s', action='store', default=".h",
+        dest='suffix', help='File name suffix')
+
     args = parser.parse_args()
     return args
 
@@ -83,6 +133,13 @@ def add_dict(enchant_dict, filename):
     for wrd in lines:
         enchant_dict.add_to_pwl(wrd)
 
+
+def getMimeType(filepath):
+
+    suffix2mime = { '.h':'text/x-c++', '.py':'text/x-python', '.ruby':'test/x-ruby',
+                    '.java':'text/x-java-source' }
+    name, ext = os.path.splitext(filepath)
+    return suffix2mime[ext]
 
 
 if __name__ == '__main__':
@@ -119,9 +176,23 @@ if __name__ == '__main__':
     for f in file_list:
         if not args.miss:
             print("\nChecking", f)
-        result = spell_check_file(f, spell_checker, output_lvl=output_lvl,
-                                  prefixes=['sitk', 'itk'])
-        bad_words = sorted(bad_words+result)
+        if os.path.isdir(f):
+            dir_entries = glob.glob(f+'/*'+args.suffix)
+            for x in dir_entries:
+                if not args.miss:
+                    print("\nChecking", x)
+                mtype = getMimeType(x)
+                result = spell_check_file(x, spell_checker, mimetype=mtype,
+                                          output_lvl=output_lvl,
+                                          prefixes=['sitk', 'itk'])
+                bad_words = sorted(bad_words+result)
+        else:
+            mtype = getMimeType(f)
+            result = spell_check_file(f, spell_checker, mimetype=mtype,
+                                      output_lvl=output_lvl,
+                                      prefixes=['sitk', 'itk', 'vtk'])
+
+            bad_words = sorted(bad_words+result)
 
 
     if not args.miss:
