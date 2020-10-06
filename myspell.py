@@ -18,7 +18,7 @@ def myspell(fname):
     for x in fp:
       spell_checker.set_text(x)
       for error in spell_checker:
-        print("Error:", error.word, lc)
+        print("Error:", error.word, "(line", lc, ")")
       lc = lc+1
 
 
