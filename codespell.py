@@ -4,6 +4,7 @@ import os
 import glob
 import sys
 import argparse
+import re
 
 from enchant.checker import SpellChecker
 from enchant.tokenize import Filter, EmailFilter, URLFilter
@@ -34,7 +35,19 @@ def splitCamelCase(word):
     return result
 
 
-def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=1, prefixes=[]):
+def getMimeType(filepath):
+
+    suffix2mime = { '.h':'text/x-c++', '.py':'text/x-python', '.ruby':'test/x-ruby',
+                    '.java':'text/x-java-source' }
+    name, ext = os.path.splitext(filepath)
+    return suffix2mime[ext]
+
+
+def spell_check_file(filename, spell_checker, mimetype='',
+                     output_lvl=1, prefixes=[]):
+
+    if len(mimetype) == 0:
+        mimetype = getMimeType(filename)
 
     if output_lvl>0:
         print("spell_check_file:", filename, ",", mimetype)
@@ -105,6 +118,15 @@ def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=
 
     return bad_words
 
+
+def exclude_check(name, exclude_list):
+    for pattern in exclude_list:
+        match = re.findall("%s" % pattern, name)
+        if len(match)>0:
+            return True
+    return False
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
 
@@ -119,11 +141,18 @@ def parse_args():
     parser.add_argument('--dict', '-d', action='append',
         dest='dict', help='Add a dictionary (multiples allowed)')
 
+    parser.add_argument('--exclude', '-e', action='append',
+        dest='exclude', help='Add exclude regex (multiples allowed)')
+
+    parser.add_argument('--prefix', '-p', action='append', default=[],
+        dest='prefixes', help='Add word prefix (multiples allowed)')
+
     parser.add_argument('--miss', '-m', action='store_true', default=False,
         dest='miss', help='Only output the misspelt words')
 
     parser.add_argument('--suffix', '-s', action='store', default=".h",
         dest='suffix', help='File name suffix')
+
 
     args = parser.parse_args()
     return args
@@ -137,14 +166,6 @@ def add_dict(enchant_dict, filename):
     for wrd in lines:
         if not enchant_dict.check(wrd):
             enchant_dict.add_to_pwl(wrd)
-
-
-def getMimeType(filepath):
-
-    suffix2mime = { '.h':'text/x-c++', '.py':'text/x-python', '.ruby':'test/x-ruby',
-                    '.java':'text/x-java-source' }
-    name, ext = os.path.splitext(filepath)
-    return suffix2mime[ext]
 
 
 if __name__ == '__main__':
@@ -176,26 +197,42 @@ if __name__ == '__main__':
     else:
         file_list.append(image_h)
 
+    prefixes = ['sitk', 'itk', 'vtk'] + args.prefixes
+
     bad_words = []
 
+
     for f in file_list:
+
         if not args.miss:
             print("\nChecking", f)
+
         if os.path.isdir(f):
+
+            # f is a directory, so search for files inside
             dir_entries = glob.glob(f+'/**/*'+args.suffix, recursive=True)
+
+            # spell check the files found in f
             for x in dir_entries:
+
+                if exclude_check(x, args.exclude):
+                    print ("\nExcluding", x)
+                    continue
+
                 if not args.miss:
                     print("\nChecking", x)
-                mtype = getMimeType(x)
-                result = spell_check_file(x, spell_checker, mimetype=mtype,
-                                          output_lvl=output_lvl,
-                                          prefixes=['sitk', 'itk', 'vtk'])
+                result = spell_check_file(x, spell_checker,
+                                          output_lvl=output_lvl, prefixes=prefixes)
                 bad_words = sorted(bad_words+result)
         else:
-            mtype = getMimeType(f)
-            result = spell_check_file(f, spell_checker, mimetype=mtype,
-                                      output_lvl=output_lvl,
-                                      prefixes=['sitk', 'itk', 'vtk'])
+
+            if exclude_check(f, args.exclude):
+                print ("\nExcluding", x)
+                continue
+
+            # f is a file, so spell check it
+            result = spell_check_file(f, spell_checker,
+                                      output_lvl=output_lvl, prefixes=prefixes)
 
             bad_words = sorted(bad_words+result)
 
