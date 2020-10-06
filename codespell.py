@@ -40,7 +40,11 @@ def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=
         print("spell_check_file:", filename, ",", mimetype)
 
     # Returns a list of comment_parser.parsers.common.Comments
-    clist = comment_parser.extract_comments(filename, mime=mimetype)
+    try:
+        clist = comment_parser.extract_comments(filename, mime=mimetype)
+    except:
+        print("Parser failed, skipping file\n")
+        return []
 
     bad_words = set()
 
@@ -85,7 +89,7 @@ def spell_check_file(filename, spell_checker, mimetype='text/x-c++', output_lvl=
         if len(mistakes):
             if output_lvl > 0:
                 print("\nLine number", c.line_number())
-            if output_lvl > 1:
+            if output_lvl > 0:
                 print(c.text())
             for m in mistakes:
                 if output_lvl >= 0:
@@ -131,7 +135,8 @@ def add_dict(enchant_dict, filename):
 
     # You better not have more than 1 word in a line
     for wrd in lines:
-        enchant_dict.add_to_pwl(wrd)
+        if not enchant_dict.check(wrd):
+            enchant_dict.add_to_pwl(wrd)
 
 
 def getMimeType(filepath):
@@ -177,14 +182,14 @@ if __name__ == '__main__':
         if not args.miss:
             print("\nChecking", f)
         if os.path.isdir(f):
-            dir_entries = glob.glob(f+'/*'+args.suffix)
+            dir_entries = glob.glob(f+'/**/*'+args.suffix, recursive=True)
             for x in dir_entries:
                 if not args.miss:
                     print("\nChecking", x)
                 mtype = getMimeType(x)
                 result = spell_check_file(x, spell_checker, mimetype=mtype,
                                           output_lvl=output_lvl,
-                                          prefixes=['sitk', 'itk'])
+                                          prefixes=['sitk', 'itk', 'vtk'])
                 bad_words = sorted(bad_words+result)
         else:
             mtype = getMimeType(f)
