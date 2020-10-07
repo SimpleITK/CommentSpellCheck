@@ -119,6 +119,8 @@ def spell_check_file(filename, spell_checker, mimetype='',
 
 
 def exclude_check(name, exclude_list):
+    if exclude_list is None:
+        return False
     for pattern in exclude_list:
         match = re.findall("%s" % pattern, name)
         if len(match) > 0:
