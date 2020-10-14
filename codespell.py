@@ -59,7 +59,7 @@ def spell_check_file(filename, spell_checker, mimetype='',
         print("Parser failed, skipping file\n")
         return []
 
-    bad_words = set()
+    bad_words = []
 
     for c in clist:
         mistakes = []
@@ -106,7 +106,7 @@ def spell_check_file(filename, spell_checker, mimetype='',
             for m in mistakes:
                 if output_lvl >= 0:
                     print("   ", m)
-                bad_words.add(m)
+                bad_words.append([m, filename, c.line_number()])
 
     bad_words = sorted(bad_words)
 
@@ -242,4 +242,6 @@ if __name__ == '__main__':
     if not args.miss:
         print("\nBad words\n")
     for x in bad_words:
-        print(x)
+        print(x[0],": ",x[1], ", ", x[2], sep='')
+    if not args.miss:
+        print("")
