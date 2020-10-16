@@ -9,6 +9,9 @@ Here is how it is typically run:
 
 This will recursively find all the '.h' files in a directory, extract
 the C/C++ comments from the code and run a spell checker on them.
+The '--exclude' flag tells the script to ignore any file that has
+'Ancillary' in it's full path name.  This flag will accept any
+regular expression.
 
 In addition to pyenchant's English dictionary, we use the words in 
 **additional_dictionary.txt**.  These are proper names and technical
