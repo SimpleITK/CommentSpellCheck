@@ -1,5 +1,6 @@
 #! /usr/bin/env
 
+import sys
 import os
 import glob
 import argparse
@@ -89,6 +90,13 @@ def spell_check_file(filename, spell_checker, mimetype='',
                     if not spell_checker.check(s):
                         ok_flag = False
                 if ok_flag:
+                    continue
+
+            # Check for possesive words
+
+            if error.word.endswith("'s"):
+                wrd = error.word[:-2]
+                if spell_checker.check(wrd):
                     continue
 
             if output_lvl > 1:
@@ -241,7 +249,14 @@ if __name__ == '__main__':
 
     if not args.miss:
         print("\nBad words\n")
+
+    prev = ""
     for x in bad_words:
-        print(x[0],": ",x[1], ", ", x[2], sep='')
+        if x[0] == prev:
+            sys.stdout.write('.')
+            continue
+        print("\n", x[0],": ",x[1], ", ", x[2], sep='')
+        prev = x[0]
+
     if not args.miss:
         print("")
