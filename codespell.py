@@ -260,3 +260,7 @@ if __name__ == '__main__':
 
     if not args.miss:
         print("")
+
+    print (len(bad_words), "misspellings found")
+    
+    sys.exit(len(bad_words))
