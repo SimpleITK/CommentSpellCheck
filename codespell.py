@@ -67,6 +67,8 @@ def spell_check_file(filename, spell_checker, mimetype='',
         spell_checker.set_text(c.text())
 
         for error in spell_checker:
+            if output_lvl > 1:
+                print("Error:", error.word)
 
             # Check if the bad word starts with a prefix.
             # If so, spell check the word without that prefix.
@@ -75,9 +77,12 @@ def spell_check_file(filename, spell_checker, mimetype='',
                 if error.word.startswith(pre):
                     wrd = error.word[len(pre):]
                     if output_lvl > 1:
-                        print("Trying without prefix: ", wrd)
-                    if spell_checker.check(wrd):
-                        continue
+                        print("Trying without prefix: ", error.word, wrd)
+                    try:
+                        if spell_checker.check(wrd):
+                            continue
+                    except BaseException:
+                        print("Caught an exception for word", error.word, wrd)
 
             # Try splitting camel case words and checking each sub-word
 
