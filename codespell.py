@@ -195,7 +195,9 @@ if __name__ == '__main__':
     args = parse_args()
     # print(args)
 
-    sitk_dict = DictWithPWL('en_US', 'additional_dictionary.txt')
+    thisdir = os.path.dirname(os.path.abspath(__file__))
+
+    sitk_dict = DictWithPWL('en_US', thisdir+'/additional_dictionary.txt')
 
     if args.dict is not None:
         for d in args.dict:
