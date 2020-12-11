@@ -75,6 +75,12 @@ def spell_check_file(filename, spell_checker, mimetype='',
             #
             for pre in prefixes:
                 if error.word.startswith(pre):
+
+                    # check if the word is only the prefix
+                    if len(pre) == len(error.word):
+                        continue
+
+                    # remove the prefix
                     wrd = error.word[len(pre):]
                     if output_lvl > 1:
                         print("Trying without prefix: ", error.word, wrd)
