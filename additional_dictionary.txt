@@ -956,6 +956,7 @@ convolved
 convolving
 coord
 coords
+copiable
 copyable
 copyfmt
 copyreg
