@@ -667,6 +667,7 @@ TimeVaryingVelocityFieldImageRegistrationMethodv
 Timoner
 Tomasi
 Torsten
+Transformix
 Tsai
 Tsallis
 Tube3
@@ -1647,6 +1648,10 @@ sinusoid
 sitk
 sitkBSplineResampler
 sitkBSplineResamplerOrder
+sitkelastiximagefilter
+sitkelastiximagefilterimpl
+sitktransformiximagefilter
+sitktransformiximagefilterimpl
 sizeof
 skipws
 slateblue
