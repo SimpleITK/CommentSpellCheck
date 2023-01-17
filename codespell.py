@@ -5,6 +5,7 @@ import os
 import glob
 import argparse
 import re
+from pathlib import Path
 
 from enchant.checker import SpellChecker
 from enchant.tokenize import EmailFilter, URLFilter
@@ -195,9 +196,11 @@ if __name__ == '__main__':
     args = parse_args()
     # print(args)
 
-    thisdir = os.path.dirname(os.path.abspath(__file__))
+    initial_dct = Path(__file__) / 'additional_dictionary.txt'
+    if not initial_dct.exists():
+        initial_dct = None
 
-    sitk_dict = DictWithPWL('en_US', thisdir+'/additional_dictionary.txt')
+    sitk_dict = DictWithPWL('en_US', initial_dct)
 
     if args.dict is not None:
         for d in args.dict:
