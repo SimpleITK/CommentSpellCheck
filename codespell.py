@@ -1,10 +1,11 @@
-#! /usr/bin/env
+#!/usr/bin/env python3
 
 import sys
 import os
 import glob
 import argparse
 import re
+from pathlib import Path
 
 from enchant.checker import SpellChecker
 from enchant.tokenize import EmailFilter, URLFilter
@@ -103,7 +104,7 @@ def spell_check_file(filename, spell_checker, mimetype='',
                 if ok_flag:
                     continue
 
-            # Check for possesive words
+            # Check for possessive words
 
             if error.word.endswith("'s"):
                 wrd = error.word[:-2]
@@ -190,14 +191,15 @@ def add_dict(enchant_dict, filename):
             enchant_dict.add_to_pwl(wrd)
 
 
-if __name__ == '__main__':
-
+def main():
     args = parse_args()
     # print(args)
 
-    thisdir = os.path.dirname(os.path.abspath(__file__))
+    initial_dct = Path(__file__) / 'additional_dictionary.txt'
+    if not initial_dct.exists():
+        initial_dct = None
 
-    sitk_dict = DictWithPWL('en_US', thisdir+'/additional_dictionary.txt')
+    sitk_dict = DictWithPWL('en_US', initial_dct)
 
     if args.dict is not None:
         for d in args.dict:
@@ -233,7 +235,7 @@ if __name__ == '__main__':
         if os.path.isdir(f):
 
             # f is a directory, so search for files inside
-            dir_entries = glob.glob(f+'/**/*'+args.suffix, recursive=True)
+            dir_entries = glob.glob(f + '/**/*' + args.suffix, recursive=True)
 
             # spell check the files found in f
             for x in dir_entries:
@@ -247,7 +249,7 @@ if __name__ == '__main__':
                 result = spell_check_file(x, spell_checker,
                                           output_lvl=output_lvl,
                                           prefixes=prefixes)
-                bad_words = sorted(bad_words+result)
+                bad_words = sorted(bad_words + result)
         else:
 
             if exclude_check(f, args.exclude):
@@ -258,7 +260,7 @@ if __name__ == '__main__':
             result = spell_check_file(f, spell_checker,
                                       output_lvl=output_lvl, prefixes=prefixes)
 
-            bad_words = sorted(bad_words+result)
+            bad_words = sorted(bad_words + result)
 
     if not args.miss:
         print("\nBad words\n")
@@ -268,12 +270,16 @@ if __name__ == '__main__':
         if x[0] == prev:
             sys.stdout.write('.')
             continue
-        print("\n", x[0],": ",x[1], ", ", x[2], sep='')
+        print("\n", x[0], ": ", x[1], ", ", x[2], sep='')
         prev = x[0]
 
     if not args.miss:
         print("")
 
-    print (len(bad_words), "misspellings found")
-    
+    print(len(bad_words), "misspellings found")
+
     sys.exit(len(bad_words))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "SimpleITKSpellChecking"
+version = "0.0.1"
+authors = [
+  { name="David Chen", email="dchen@mail.nih.gov" },
+]
+description = "A script to automatically spell checks comments of a codebase."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+
+[project.urls]
+"Homepage" = "https://github.com/SimpleITK/SimpleITKSpellChecking"
+"Bug Tracker" = "https://github.com/SimpleITK/SimpleITKSpellChecking"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.scripts]
+codespell = "codespell:main"
+
