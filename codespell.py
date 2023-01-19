@@ -9,7 +9,7 @@ from pathlib import Path
 
 from enchant.checker import SpellChecker
 from enchant.tokenize import EmailFilter, URLFilter
-from enchant import DictWithPWL
+from enchant import Dict
 
 from comment_parser import comment_parser
 
@@ -171,6 +171,7 @@ def parse_args():
                         dest='prefixes',
                         help='Add word prefix (multiples allowed)')
 
+
     parser.add_argument('--miss', '-m', action='store_true', default=False,
                         dest='miss', help='Only output the misspelt words')
 
@@ -193,13 +194,14 @@ def add_dict(enchant_dict, filename):
 
 def main():
     args = parse_args()
-    # print(args)
 
-    initial_dct = Path(__file__) / 'additional_dictionary.txt'
+    sitk_dict = Dict('en_US')
+
+    initial_dct = Path(__file__).parent / 'additional_dictionary.txt'
     if not initial_dct.exists():
         initial_dct = None
-
-    sitk_dict = DictWithPWL('en_US', initial_dct)
+    else:
+        add_dict(sitk_dict, str(initial_dct))
 
     if args.dict is not None:
         for d in args.dict:
