@@ -4,10 +4,10 @@ import SimpleITK as sitk
 
 wrds = dir(sitk)
 
-result= []
+result = []
 
 for w in wrds:
-    x = getattr(sitk,w)
+    x = getattr(sitk, w)
     for y in dir(x):
         if "_" in y:
             continue
