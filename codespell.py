@@ -171,7 +171,6 @@ def parse_args():
                         dest='prefixes',
                         help='Add word prefix (multiples allowed)')
 
-
     parser.add_argument('--miss', '-m', action='store_true', default=False,
                         dest='miss', help='Only output the misspelt words')
 

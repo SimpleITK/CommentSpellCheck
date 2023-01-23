@@ -4,10 +4,10 @@ import itk
 
 wrds = dir(itk)
 
-result= []
+result = []
 
 for w in wrds:
-    x = getattr(itk,w)
+    x = getattr(itk, w)
     for y in dir(x):
         if "_" in y:
             continue
@@ -17,5 +17,5 @@ for w in wrds:
 result2 = sorted(set(result))
 
 for w in result2:
-    if len(w)>2:
+    if len(w) > 2:
         print(w)
