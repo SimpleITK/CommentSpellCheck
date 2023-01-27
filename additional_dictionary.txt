@@ -99,6 +99,7 @@ Centroid
 Chamfer
 CharEqn
 Charvat
+Clunie's
 Cokus
 Colchester
 Colex
@@ -145,6 +146,8 @@ Dest
 Destructor
 Detre
 Developpement
+Dicom
+DicomImagePrintTags
 Diffeomorphic
 Diffeomorphisms
 Dimensionally
@@ -313,6 +316,7 @@ Ident
 Ik
 Illgner
 Illingworth
+ImageJ
 ImageRegistrationMethodv
 Imelinska
 Implementational
@@ -968,6 +972,7 @@ cov
 covariances
 cpp
 cppcheck
+csv
 cthead
 ctors
 ctrl
@@ -986,6 +991,7 @@ datastructure
 datastructures
 datatypes
 dave
+dcm
 ddots
 de
 deallocate
@@ -1071,6 +1077,7 @@ emt
 encodings
 endcode
 endcond
+endian
 endif
 endl
 endsphinx
@@ -1173,6 +1180,7 @@ gradf
 graylevel
 graylevels
 grayscale
+grey
 greyscale
 gridded
 gridding
@@ -1205,6 +1213,7 @@ hypot
 i0
 iadd
 iand
+ick
 identifiers
 idx
 idxth
@@ -1398,6 +1407,7 @@ msvc
 mul
 multiband
 multilabel
+multimap
 multimodality
 multires
 multiresolution
@@ -1516,6 +1526,7 @@ piecewise
 pixelIDs
 pixeltype
 pixelwise
+photometric
 pmt
 pn
 png
@@ -1593,6 +1604,7 @@ resample
 resampled
 resamples
 resampling
+rescale
 rescaled
 rescope
 resizable
@@ -1612,6 +1624,7 @@ rot90
 royalblue
 rshift
 rsplit
+rst
 rstrip
 runtime
 rval
@@ -1673,6 +1686,7 @@ splitlines
 splitter
 splweb
 springgreen
+sprintf
 sqr
 sqrt
 srcRegion
@@ -1733,6 +1747,7 @@ sz
 tanh
 tellg
 tellp
+tempfile
 template
 templated
 templating
@@ -1785,6 +1800,7 @@ typelists
 typename
 tz
 ubyte
+uchar
 uchars
 uint
 uint16
@@ -1823,6 +1839,7 @@ using
 usr
 valarray
 valuator
+variadic
 variational
 vation
 vcref
@@ -1860,6 +1877,7 @@ waterlevel
 wavefronts
 wchar_t
 while
+whitespace
 wilkinson
 writeme
 wrt
