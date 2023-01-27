@@ -38,9 +38,13 @@ def splitCamelCase(word):
 
 def getMimeType(filepath):
 
-    suffix2mime = {'.h': 'text/x-c++', '.py': 'text/x-python',
-                   '.ruby': 'test/x-ruby',
-                   '.java': 'text/x-java-source'}
+    suffix2mime = { '.h': 'text/x-c++',
+                    '.cxx': 'text/x-c++',
+                    '.c': 'text/x-c++',
+                    '.py': 'text/x-python',
+                    '.ruby': 'test/x-ruby',
+                    '.java': 'text/x-java-source'
+                  }
     name, ext = os.path.splitext(filepath)
     return suffix2mime[ext]
 
@@ -174,7 +178,7 @@ def parse_args():
     parser.add_argument('--miss', '-m', action='store_true', default=False,
                         dest='miss', help='Only output the misspelt words')
 
-    parser.add_argument('--suffix', '-s', action='store', default=".h",
+    parser.add_argument('--suffix', '-s', action='append', default=[".h"],
                         dest='suffix', help='File name suffix')
 
     args = parser.parse_args()
@@ -228,6 +232,10 @@ def main():
 
     bad_words = []
 
+    if output_lvl>1:
+        print("Prefixes:", prefixes)
+        print("Suffixes:", args.suffix)
+
     for f in file_list:
 
         if not args.miss:
@@ -236,7 +244,12 @@ def main():
         if os.path.isdir(f):
 
             # f is a directory, so search for files inside
-            dir_entries = glob.glob(f + '/**/*' + args.suffix, recursive=True)
+            dir_entries = []
+            for s in args.suffix:
+                dir_entries = dir_entries + glob.glob(f + '/**/*' + s, recursive=True)
+
+            if output_lvl:
+                print(dir_entries)
 
             # spell check the files found in f
             for x in dir_entries:
