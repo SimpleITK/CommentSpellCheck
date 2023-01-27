@@ -6,14 +6,14 @@ import os
 class TestCodespell(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print("Setting up codespell tests")
+        print("\nSetting up codespell tests")
 
     @classmethod
     def tearDownClass(cls):
-        print("Tearing down dicom2stl tests")
+        print("\nTearing down dicom2stl tests")
 
     def test_codespell(self):
-        print("Codespell test")
+        print("\nCodespell simple test")
         cwd = os.getcwd()
         print(cwd)
         runresult = subprocess.run(
@@ -28,6 +28,23 @@ class TestCodespell(unittest.TestCase):
         )
         print("Return code:", runresult.returncode)
         if runresult.returncode:
-            self.fail("codespell process returned bad code")
+            self.fail("Simple test: codespell process returned bad code")
+
+        print("\nCodespell test on itself")
+        cwd = os.getcwd()
+        print(cwd)
+        runresult = subprocess.run(
+            [
+                "python",
+                "codespell.py",
+                "--verbose",
+                "--suffix",
+                ".py",
+                "."
+            ]
+        )
+        print("Return code:", runresult.returncode)
+        if runresult.returncode:
+            self.fail("Self code test: codespell process returned bad code")
 
 
