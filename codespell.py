@@ -14,9 +14,6 @@ from enchant import Dict
 from comment_parser import comment_parser
 
 
-image_h = '/Users/dchen/SimpleITK/Code/Common/include/sitkImage.h'
-
-
 def splitCamelCase(word):
 
     result = []
@@ -226,7 +223,7 @@ def main():
     if len(args.filenames):
         file_list = args.filenames
     else:
-        file_list.append(image_h)
+        sys.exit(0)
 
     prefixes = ['sitk', 'itk', 'vtk'] + args.prefixes
 
