@@ -14,6 +14,7 @@ from enchant import Dict
 from comment_parser import comment_parser
 
 
+# Split a camel case string into individual words.
 def splitCamelCase(word):
 
     result = []
@@ -33,19 +34,45 @@ def splitCamelCase(word):
     return result
 
 
+# Map file suffix to file type.
 def getMimeType(filepath):
 
     suffix2mime = { '.h': 'text/x-c++',
                     '.cxx': 'text/x-c++',
                     '.c': 'text/x-c++',
                     '.py': 'text/x-python',
-                    '.ruby': 'test/x-ruby',
-                    '.java': 'text/x-java-source'
+                    '.ruby': 'text/x-ruby',
+                    '.java': 'text/x-java-source',
+                    '.txt': 'text/plain',
+                    '.rst': 'text/plain',
                   }
     name, ext = os.path.splitext(filepath)
-    return suffix2mime[ext]
+
+    if ext in suffix2mime:
+        return suffix2mime[ext]
+    else:
+        return 'text/plain'
 
 
+#
+#  For a regular text file, we don't need to parse it for comments.  We
+#  just pass every line to the spell checked
+#
+def load_text_file(filename):
+
+    output = []
+    lc = 0
+    with open(filename) as fp:
+        for line in fp:
+           line = line.strip()
+           lc = lc + 1
+           comment = comment_parser.common.Comment(line, lc)
+           output.append(comment)
+    return output
+
+
+# The main spell checking procedure
+#
 def spell_check_file(filename, spell_checker, mimetype='',
                      output_lvl=1, prefixes=[]):
 
@@ -56,15 +83,22 @@ def spell_check_file(filename, spell_checker, mimetype='',
         print("spell_check_file:", filename, ",", mimetype)
 
     # Returns a list of comment_parser.parsers.common.Comments
-    try:
-        clist = comment_parser.extract_comments(filename, mime=mimetype)
-    except BaseException:
-        print("Parser failed, skipping file\n")
-        return []
+    if mimetype == 'text/plain':
+        clist = load_text_file(filename)
+    else:
+        try:
+            clist = comment_parser.extract_comments(filename, mime=mimetype)
+        except BaseException:
+            print("Parser failed, skipping file\n")
+            return []
 
     bad_words = []
 
     for c in clist:
+        if output_lvl > 1:
+            print("Comment: ", c)
+            print(type(c))
+
         mistakes = []
         spell_checker.set_text(c.text())
 
@@ -139,6 +173,8 @@ def spell_check_file(filename, spell_checker, mimetype='',
     return bad_words
 
 
+# Does the file match any pattern in the exclude_list?  Then exclude it.
+#
 def exclude_check(name, exclude_list):
     if exclude_list is None:
         return False
@@ -182,6 +218,8 @@ def parse_args():
     return args
 
 
+# Add the words from a dictionary file into our spell checking dictionary.
+#
 def add_dict(enchant_dict, filename):
     with open(filename) as f:
         lines = f.read().splitlines()
@@ -197,6 +235,8 @@ def main():
 
     sitk_dict = Dict('en_US')
 
+    # Load the dictionary files
+    #
     initial_dct = Path(__file__).parent / 'additional_dictionary.txt'
     if not initial_dct.exists():
         initial_dct = None
@@ -210,6 +250,7 @@ def main():
     spell_checker = SpellChecker(sitk_dict,
                                  filters=[EmailFilter, URLFilter])
 
+    # Set the amount of debugging messages to print.
     output_lvl = 1
     if args.brief:
         output_lvl = 0
@@ -233,11 +274,15 @@ def main():
         print("Prefixes:", prefixes)
         print("Suffixes:", args.suffix)
 
+    #
+    # Spell check the files
+    #
     for f in file_list:
 
         if not args.miss:
             print("\nChecking", f)
 
+        # If f is a directory, recursively check for files in it.
         if os.path.isdir(f):
 
             # f is a directory, so search for files inside
@@ -261,8 +306,10 @@ def main():
                                           output_lvl=output_lvl,
                                           prefixes=prefixes)
                 bad_words = sorted(bad_words + result)
+
         else:
 
+            # f is a file
             if exclude_check(f, args.exclude):
                 print("\nExcluding", x)
                 continue
@@ -273,21 +320,28 @@ def main():
 
             bad_words = sorted(bad_words + result)
 
+
+    # Done spell checking.  Print out all the words not found in our dictionary.
+    #
     if not args.miss:
         print("\nBad words\n")
 
     prev = ""
+    bc = 0
     for x in bad_words:
         if x[0] == prev:
             sys.stdout.write('.')
             continue
         print("\n", x[0], ": ", x[1], ", ", x[2], sep='')
         prev = x[0]
+        bc = bc + 1
 
     if not args.miss:
         print("")
 
-    print(len(bad_words), "misspellings found")
+    print("")
+    print(bc, "unknown words found")
+    print(len(bad_words), "instances")
 
     sys.exit(len(bad_words))
 
