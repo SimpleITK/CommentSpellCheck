@@ -1615,6 +1615,7 @@ rot90
 royalblue
 rshift
 rsplit
+rst
 rstrip
 runtime
 rval
