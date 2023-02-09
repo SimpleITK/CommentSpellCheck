@@ -45,6 +45,7 @@ def getMimeType(filepath):
                     '.java': 'text/x-java-source',
                     '.txt': 'text/plain',
                     '.rst': 'text/plain',
+                    '.md': 'text/plain',
                   }
     name, ext = os.path.splitext(filepath)
 
@@ -89,7 +90,7 @@ def spell_check_file(filename, spell_checker, mimetype='',
         try:
             clist = comment_parser.extract_comments(filename, mime=mimetype)
         except BaseException:
-            print("Parser failed, skipping file\n")
+            print("Parser failed, skipping file", filename)
             return []
 
     bad_words = []
@@ -290,7 +291,7 @@ def main():
             for s in args.suffix:
                 dir_entries = dir_entries + glob.glob(f + '/**/*' + s, recursive=True)
 
-            if output_lvl:
+            if output_lvl>0:
                 print(dir_entries)
 
             # spell check the files found in f
@@ -330,9 +331,9 @@ def main():
     bc = 0
     for x in bad_words:
         if x[0] == prev:
-            sys.stdout.write('.')
+            sys.stderr.write('.')
             continue
-        print("\n", x[0], ": ", x[1], ", ", x[2], sep='')
+        print("\n", x[0], ": ", x[1], ", ", x[2], sep='', file=sys.stderr)
         prev = x[0]
         bc = bc + 1
 
