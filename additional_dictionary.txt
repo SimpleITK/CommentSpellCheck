@@ -923,6 +923,7 @@ clientdata
 closedness
 codebook
 codebooks
+codespell
 codeword
 codewords
 codimension
@@ -1165,6 +1166,7 @@ getsizeof
 getter
 ggplot
 gimble
+github
 globals
 gmail
 goodbit
@@ -1560,6 +1562,7 @@ public
 putback
 pv
 py
+pyenchant
 pyplot
 qe
 ql
@@ -1722,6 +1725,7 @@ superpixel
 supersampling
 superset
 svd
+svg
 swapaxes
 sweepline
 switch
@@ -1885,6 +1889,7 @@ xyz
 xz
 ymax
 ymin
+yml
 yn
 yy
 yyy

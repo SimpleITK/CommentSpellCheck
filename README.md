@@ -32,3 +32,10 @@ If a word is not found in the dictionaries, we try two additional checks.
 ...camel-case words such as 'GetArrayFromImage', which would get split into
 ...'Get', 'Array', 'From', and 'Image'.  Camel-case words are very commonly
 ...used for code elements.
+
+The script can also process other file types.  With the **'--suffix'**
+option, the following file types are available: Python (.py), C/C++
+(.c/.cxx), Text (.txt), reStructuredText(.rst), Markdown (.md), Ruby (.ruby),
+and Java (.java).  Note that reStructuredText files are treated as standard
+text.  Consequentially, all markup keywords that are not actual words will
+need to be added to the additional/exception dictionary.
