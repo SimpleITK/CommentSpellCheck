@@ -40,6 +40,8 @@ class TestCodespell(unittest.TestCase):
                 "--verbose",
                 "--suffix",
                 ".py",
+                "--suffix",
+                ".md",
                 "."
             ]
         )
