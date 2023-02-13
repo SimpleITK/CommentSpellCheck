@@ -40,6 +40,7 @@ def getMimeType(filepath):
     suffix2mime = { '.h': 'text/x-c++',
                     '.cxx': 'text/x-c++',
                     '.c': 'text/x-c++',
+                    '.hxx': 'text/x-c++',
                     '.py': 'text/x-python',
                     '.ruby': 'text/x-ruby',
                     '.java': 'text/x-java-source',
