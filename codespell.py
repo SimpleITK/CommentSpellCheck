@@ -78,7 +78,6 @@ def load_text_file(filename):
 def spell_check_file(filename, spell_checker, mime_type='',
                      output_lvl=1, prefixes=[]):
 
-    print(mime_type)
     if len(mime_type) == 0:
         mime_type = getMimeType(filename)
 
