@@ -75,21 +75,21 @@ def load_text_file(filename):
 
 # The main spell checking procedure
 #
-def spell_check_file(filename, spell_checker, mimetype='',
+def spell_check_file(filename, spell_checker, mime_type='',
                      output_lvl=1, prefixes=[]):
 
-    if len(mimetype) == 0:
-        mimetype = getMimeType(filename)
+    if len(mime_type) == 0:
+        mime_type = getMimeType(filename)
 
     if output_lvl > 0:
-        print("spell_check_file:", filename, ",", mimetype)
+        print("spell_check_file:", filename, ",", mime_type)
 
     # Returns a list of comment_parser.parsers.common.Comments
-    if mimetype == 'text/plain':
+    if mime_type == 'text/plain':
         clist = load_text_file(filename)
     else:
         try:
-            clist = comment_parser.extract_comments(filename, mime=mimetype)
+            clist = comment_parser.extract_comments(filename, mime=mime_type)
         except BaseException:
             print("Parser failed, skipping file", filename)
             return []
@@ -216,6 +216,8 @@ def parse_args():
     parser.add_argument('--suffix', '-s', action='append', default=[".h"],
                         dest='suffix', help='File name suffix')
 
+    parser.add_argument('--type', '-t', action='store', default='',
+                        dest='mime_type', help='Set file mime type. File name suffix will be ignored.')
     args = parser.parse_args()
     return args
 
@@ -304,7 +306,7 @@ def main():
 
                 if not args.miss:
                     print("\nChecking", x)
-                result = spell_check_file(x, spell_checker,
+                result = spell_check_file(x, spell_checker, args.mime_type,
                                           output_lvl=output_lvl,
                                           prefixes=prefixes)
                 bad_words = sorted(bad_words + result)
@@ -317,7 +319,7 @@ def main():
                 continue
 
             # f is a file, so spell check it
-            result = spell_check_file(f, spell_checker,
+            result = spell_check_file(f, spell_checker, args.mime_type,
                                       output_lvl=output_lvl, prefixes=prefixes)
 
             bad_words = sorted(bad_words + result)
