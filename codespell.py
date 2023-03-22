@@ -198,6 +198,12 @@ def parse_args():
     parser.add_argument('--verbose', '-v', action='store_true', default=False,
                         dest='verbose', help='Make output verbose')
 
+    parser.add_argument('--first', '-f', action='store_true', default=False,
+                        dest='first', help='Show only first occurrence of a mispelling')
+
+    parser.add_argument('--vim', '-V', action='store_true', default=False,
+                        dest='vim', help='Output results in vim command format')
+
     parser.add_argument('--dict', '-d', action='append',
                         dest='dict',
                         help='Add a dictionary (multiples allowed)')
@@ -330,22 +336,26 @@ def main():
     if not args.miss:
         print("\nBad words\n")
 
-    prev = ""
-    bc = 0
-    for x in bad_words:
-        if x[0] == prev:
+    previous_word = ""
+
+    for misspelled_word, found_file, line_num in bad_words:
+
+        if (misspelled_word != previous_word):
+            print("\n", misspelled_word,":", sep='')
+
+        if (misspelled_word == previous_word) and args.first:
             sys.stderr.write('.')
             continue
-        print("\n", x[0], ": ", x[1], ", ", x[2], sep='', file=sys.stderr)
-        prev = x[0]
-        bc = bc + 1
 
-    if not args.miss:
-        print("")
+        if args.vim:
+            print("    vim +", line_num, " ", found_file, sep='', file=sys.stderr)
+        else:
+            print("    ", found_file, ", ", line_num, sep='', file=sys.stderr)
+
+        previous_word = misspelled_word
 
     print("")
-    print(bc, "unknown words found")
-    print(len(bad_words), "instances")
+    print(len(bad_words), "misspellings found")
 
     sys.exit(len(bad_words))
 
