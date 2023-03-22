@@ -198,6 +198,12 @@ def parse_args():
     parser.add_argument('--verbose', '-v', action='store_true', default=False,
                         dest='verbose', help='Make output verbose')
 
+    parser.add_argument('--first', '-f', action='store_true', default=False,
+                        dest='first', help='Show only first occurrence of a mispelling')
+
+    parser.add_argument('--vim', '-V', action='store_true', default=False,
+                        dest='vim', help='Output results in vim command format')
+
     parser.add_argument('--dict', '-d', action='append',
                         dest='dict',
                         help='Add a dictionary (multiples allowed)')
@@ -333,10 +339,15 @@ def main():
     prev = ""
     bc = 0
     for x in bad_words:
-        if x[0] == prev:
+        if (x[0] != prev):
+            print("\n", x[0],":", sep='')
+        if (x[0] == prev) and args.first:
             sys.stderr.write('.')
             continue
-        print("\n", x[0], ": ", x[1], ", ", x[2], sep='', file=sys.stderr)
+        if args.vim:
+            print("    vim +", x[2], " ", x[1], sep='', file=sys.stderr)
+        else:
+            print("    ", x[1], ", ", x[2], sep='', file=sys.stderr)
         prev = x[0]
         bc = bc + 1
 
