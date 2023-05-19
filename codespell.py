@@ -307,7 +307,8 @@ def main():
             for x in dir_entries:
 
                 if exclude_check(x, args.exclude):
-                    print("\nExcluding", x)
+                    if not args.miss:
+                        print("\nExcluding", x)
                     continue
 
                 if not args.miss:
@@ -321,7 +322,8 @@ def main():
 
             # f is a file
             if exclude_check(f, args.exclude):
-                print("\nExcluding", x)
+                if not args.miss:
+                    print("\nExcluding", x)
                 continue
 
             # f is a file, so spell check it
