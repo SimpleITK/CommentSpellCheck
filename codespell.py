@@ -14,8 +14,8 @@ from enchant import Dict
 from comment_parser import comment_parser
 
 
-# Split a camel case string into individual words.
 def splitCamelCase(word):
+    """Split a camel case string into individual words."""
 
     result = []
 
@@ -34,8 +34,8 @@ def splitCamelCase(word):
     return result
 
 
-# Map file suffix to file type.
 def getMimeType(filepath):
+    """Map `filepath`` extension to file type."""
 
     suffix2mime = { '.h': 'text/x-c++',
                     '.cxx': 'text/x-c++',
@@ -56,11 +56,11 @@ def getMimeType(filepath):
         return 'text/plain'
 
 
-#
-#  For a regular text file, we don't need to parse it for comments.  We
-#  just pass every line to the spell checked
-#
 def load_text_file(filename):
+    """
+    For a regular text file, we don't need to parse it for comments. We
+    just pass every line to the spell checked.
+    """
 
     output = []
     lc = 0
@@ -73,10 +73,9 @@ def load_text_file(filename):
     return output
 
 
-# The main spell checking procedure
-#
 def spell_check_file(filename, spell_checker, mime_type='',
                      output_lvl=1, prefixes=[]):
+    """Check spelling in ``filename``."""
 
     if len(mime_type) == 0:
         mime_type = getMimeType(filename)
@@ -175,9 +174,9 @@ def spell_check_file(filename, spell_checker, mime_type='',
     return bad_words
 
 
-# Does the file match any pattern in the exclude_list?  Then exclude it.
-#
 def exclude_check(name, exclude_list):
+    """Return True if ``name`` matches any of the regular expressions listed in
+    ``exclude_list``."""
     if exclude_list is None:
         return False
     for pattern in exclude_list:
@@ -228,9 +227,9 @@ def parse_args():
     return args
 
 
-# Add the words from a dictionary file into our spell checking dictionary.
-#
 def add_dict(enchant_dict, filename):
+    """Update ``enchant_dict`` spell checking dictionary with the words listed
+    in ``filename`` (one word per line)."""
     with open(filename) as f:
         lines = f.read().splitlines()
 
