@@ -15,6 +15,20 @@ from enchant import Dict
 from comment_parser import comment_parser
 
 
+SUFFIX2MIME = {
+    '.h': 'text/x-c++',
+    '.cxx': 'text/x-c++',
+    '.c': 'text/x-c++',
+    '.hxx': 'text/x-c++',
+    '.py': 'text/x-python',
+    '.ruby': 'text/x-ruby',
+    '.java': 'text/x-java-source',
+    '.txt': 'text/plain',
+    '.rst': 'text/plain',
+    '.md': 'text/plain',
+}
+
+
 def splitCamelCase(word):
     """Split a camel case string into individual words."""
 
@@ -37,24 +51,8 @@ def splitCamelCase(word):
 
 def getMimeType(filepath):
     """Map `filepath`` extension to file type."""
-
-    suffix2mime = { '.h': 'text/x-c++',
-                    '.cxx': 'text/x-c++',
-                    '.c': 'text/x-c++',
-                    '.hxx': 'text/x-c++',
-                    '.py': 'text/x-python',
-                    '.ruby': 'text/x-ruby',
-                    '.java': 'text/x-java-source',
-                    '.txt': 'text/plain',
-                    '.rst': 'text/plain',
-                    '.md': 'text/plain',
-                  }
     name, ext = os.path.splitext(filepath)
-
-    if ext in suffix2mime:
-        return suffix2mime[ext]
-    else:
-        return 'text/plain'
+    return SUFFIX2MIME.get(ext, 'text/plain')
 
 
 def load_text_file(filename):
@@ -298,9 +296,14 @@ def main():
 
     bad_words = []
 
+    if not args.suffix:
+        suffixes = list(SUFFIX2MIME.keys())
+    else:
+        suffixes = args.suffix
+
     if output_lvl>1:
         print("Prefixes:", prefixes)
-        print("Suffixes:", args.suffix)
+        print("Suffixes:", suffixes)
 
     #
     # Spell check the files
@@ -315,7 +318,7 @@ def main():
 
             # f is a directory, so search for files inside
             dir_entries = []
-            for s in args.suffix:
+            for s in suffixes:
                 dir_entries = dir_entries + glob.glob(f + '/**/*' + s, recursive=True)
 
             if output_lvl>0:
