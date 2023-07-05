@@ -146,6 +146,16 @@ def spell_check_comment(
                     if spell_checker.check(wrd):
                         valid = True
                         break
+                    else:
+                        # Try splitting camel case words and checking each sub-words
+                        if output_lvl > 1:
+                            print("Trying splitting camel case word: {wrd}")
+                        sub_words = splitCamelCase(wrd)
+                        if len(sub_words) > 1 and spell_check_words(
+                            spell_checker, sub_words
+                        ):
+                            valid = True
+                            break
                 except BaseException:
                     print(f"Caught an exception for word {error_word} {wrd}")
 
