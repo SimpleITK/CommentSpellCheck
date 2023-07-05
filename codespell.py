@@ -87,7 +87,7 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
         mime_type = getMimeType(filename)
 
     if output_lvl > 0:
-        print("spell_check_file:", filename, ",", mime_type)
+        print(f"spell_check_file: {filename}, {mime_type}")
 
     # Returns a list of comment_parser.parsers.common.Comments
     if mime_type == "text/plain":
@@ -96,14 +96,14 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
         try:
             clist = comment_parser.extract_comments(filename, mime=mime_type)
         except BaseException:
-            print("Parser failed, skipping file", filename)
+            print(f"Parser failed, skipping file {filename}")
             return []
 
     bad_words = []
 
     for c in clist:
         if output_lvl > 1:
-            print("Comment: ", c)
+            print(f"Comment: {c}")
             print(type(c))
 
         mistakes = []
@@ -111,7 +111,7 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
 
         for error in spell_checker:
             if output_lvl > 1:
-                print("Error:", error.word)
+                print(f"Error: {error.word}")
 
             # Check if the bad word starts with a prefix.
             # If so, spell check the word without that prefix.
@@ -125,17 +125,17 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
                     # remove the prefix
                     wrd = error.word[len(pre) :]
                     if output_lvl > 1:
-                        print("Trying without prefix: ", error.word, wrd)
+                        print(f"Trying without '{pre}' prefix: {error.word} -> {wrd}")
                     try:
                         if spell_checker.check(wrd):
                             continue
                     except BaseException:
-                        print("Caught an exception for word", error.word, wrd)
+                        print(f"Caught an exception for word {error.word} {wrd}")
 
             # Try splitting camel case words and checking each sub-word
 
             if output_lvl > 1:
-                print("Trying splitting camel case word")
+                print(f"Trying splitting camel case word: {error.word}")
             sub_words = splitCamelCase(error.word)
             if len(sub_words) > 1:
                 ok_flag = True
@@ -153,26 +153,19 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
                     continue
 
             if output_lvl > 1:
-                msg = (
-                    "error: "
-                    + "'"
-                    + error.word
-                    + "', "
-                    + "suggestions: "
-                    + str(spell_checker.suggest())
-                )
+                msg = f"error: '{error.word}', suggestions: {spell_checker.suggest()}"
             else:
                 msg = error.word
             mistakes.append(msg)
 
         if len(mistakes):
             if output_lvl > 0:
-                print("\nLine number", c.line_number())
+                print(f"\nLine number {c.line_number()}")
             if output_lvl > 0:
                 print(c.text())
             for m in mistakes:
                 if output_lvl >= 0:
-                    print("   ", m)
+                    print(f"    {m}")
                 bad_words.append([m, filename, c.line_number()])
 
     bad_words = sorted(bad_words)
@@ -379,15 +372,15 @@ def main():
         suffixes = args.suffix
 
     if output_lvl > 1:
-        print("Prefixes:", prefixes)
-        print("Suffixes:", suffixes)
+        print(f"Prefixes: {prefixes}")
+        print(f"Suffixes: {suffixes}")
 
     #
     # Spell check the files
     #
     for f in file_list:
         if not args.miss:
-            print("\nChecking", f)
+            print(f"\nChecking {f}")
 
         # If f is a directory, recursively check for files in it.
         if os.path.isdir(f):
@@ -403,11 +396,11 @@ def main():
             for x in dir_entries:
                 if exclude_check(x, args.exclude) or skip_check(x, args.skip):
                     if not args.miss:
-                        print("\nExcluding", x)
+                        print(f"\nExcluding {x}")
                     continue
 
                 if not args.miss:
-                    print("\nChecking", x)
+                    print(f"\nChecking {x}")
                 result = spell_check_file(
                     x,
                     spell_checker,
@@ -421,7 +414,7 @@ def main():
             # f is a file
             if exclude_check(f, args.exclude) or skip_check(f, args.skip):
                 if not args.miss:
-                    print("\nExcluding", x)
+                    print(f"\nExcluding {x}")
                 continue
 
             # f is a file, so spell check it
@@ -444,21 +437,21 @@ def main():
 
     for misspelled_word, found_file, line_num in bad_words:
         if misspelled_word != previous_word:
-            print("\n", misspelled_word, ":", sep="")
+            print(f"\n{misspelled_word}:")
 
         if (misspelled_word == previous_word) and args.first:
             sys.stderr.write(".")
             continue
 
         if args.vim:
-            print("    vim +", line_num, " ", found_file, sep="", file=sys.stderr)
+            print(f"    vim +{line_num} {found_file}", file=sys.stderr)
         else:
-            print("    ", found_file, ", ", line_num, sep="", file=sys.stderr)
+            print(f"    {found_file}, {line_num}", file=sys.stderr)
 
         previous_word = misspelled_word
 
     print("")
-    print(len(bad_words), "misspellings found")
+    print(f"{len(bad_words)} misspellings found")
 
     sys.exit(len(bad_words))
 
