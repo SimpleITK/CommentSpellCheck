@@ -215,9 +215,10 @@ def parse_args():
     parser.add_argument('--vim', '-V', action='store_true', default=False,
                         dest='vim', help='Output results in vim command format')
 
-    parser.add_argument('--dict', '-d', action='append',
+    parser.add_argument('--dict', '-d', '--ignore-words', '-I', action='append',
                         dest='dict',
-                        help='Add a dictionary (multiples allowed)')
+                        help='File that contains words that will be ignored (multiples allowed).'
+                        ' File must contain 1 word per line.')
 
     parser.add_argument('--exclude', '-e', action='append',
                         dest='exclude',
