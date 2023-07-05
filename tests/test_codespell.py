@@ -23,6 +23,8 @@ class TestCodespell(unittest.TestCase):
                 "--verbose",
                 "--dict",
                 "tests/dict.txt",
+                "--prefix",
+                "myprefix",
                 "tests/example.h",
             ]
         )
@@ -38,6 +40,8 @@ class TestCodespell(unittest.TestCase):
                 "python",
                 "codespell.py",
                 "--verbose",
+                "--prefix",
+                "myprefix",
                 "--suffix",
                 ".py",
                 "--suffix",

@@ -12,6 +12,7 @@
 //
 // Prefix and camel case test word:
 // sitkWhiskeyTangoFoxtrot
+// myprefixAttributeName
 //
 // Dictionary test word:
 // BinaryFillholeImageFilter

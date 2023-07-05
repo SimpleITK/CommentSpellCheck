@@ -159,6 +159,16 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
                         if spell_checker.check(wrd):
                             valid = True
                             break
+                        else:
+                            # Try splitting camel case words and checking each sub-word
+                            if output_lvl > 1:
+                                print("Trying splitting camel case word: {wrd}")
+                            sub_words = splitCamelCase(wrd)
+                            if len(sub_words) > 1 and checkWords(
+                                spell_checker, sub_words
+                            ):
+                                valid = True
+                                break
                     except BaseException:
                         print(f"Caught an exception for word {error_word} {wrd}")
 
