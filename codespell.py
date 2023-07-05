@@ -81,6 +81,14 @@ def load_text_file(filename):
     return output
 
 
+def checkWords(spell_checker, words):
+    """Check each word and report False if at least one has error."""
+    for word in words:
+        if not spell_checker.check(word):
+            return False
+    return True
+
+
 def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefixes=[]):
     """Check spelling in ``filename``."""
 
@@ -140,13 +148,8 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
             if output_lvl > 1:
                 print(f"Trying splitting camel case word: {error.word}")
             sub_words = splitCamelCase(error.word)
-            if len(sub_words) > 1:
-                ok_flag = True
-                for s in sub_words:
-                    if not spell_checker.check(s):
-                        ok_flag = False
-                if ok_flag:
-                    continue
+            if len(sub_words) > 1 and checkWords(spell_checker, sub_words):
+                continue
 
             # Check for possessive words
 
