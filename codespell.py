@@ -122,39 +122,41 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
             if output_lvl > 1:
                 print(f"Error: {error.word}")
 
+            error_word = error.word
+
             # Check if the bad word starts with a prefix.
             # If so, spell check the word without that prefix.
             #
             for pre in prefixes:
-                if error.word.startswith(pre):
+                if error_word.startswith(pre):
                     # check if the word is only the prefix
-                    if len(pre) == len(error.word):
+                    if len(pre) == len(error_word):
                         if output_lvl > 1:
                             print(f"Prefix '{pre}' matches word")
                         break
 
                     # remove the prefix
-                    wrd = error.word[len(pre) :]
+                    wrd = error_word[len(pre) :]
                     if output_lvl > 1:
-                        print(f"Trying without '{pre}' prefix: {error.word} -> {wrd}")
+                        print(f"Trying without '{pre}' prefix: {error_word} -> {wrd}")
                     try:
                         if spell_checker.check(wrd):
                             break
                     except BaseException:
-                        print(f"Caught an exception for word {error.word} {wrd}")
+                        print(f"Caught an exception for word {error_word} {wrd}")
 
             # Try splitting camel case words and checking each sub-word
 
             if output_lvl > 1:
-                print(f"Trying splitting camel case word: {error.word}")
-            sub_words = splitCamelCase(error.word)
+                print(f"Trying splitting camel case word: {error_word}")
+            sub_words = splitCamelCase(error_word)
             if len(sub_words) > 1 and checkWords(spell_checker, sub_words):
                 continue
 
             # Check for possessive words
 
-            if error.word.endswith("'s"):
-                wrd = error.word[:-2]
+            if error_word.endswith("'s"):
+                wrd = error_word[:-2]
                 if spell_checker.check(wrd):
                     continue
 
