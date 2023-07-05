@@ -256,7 +256,8 @@ def parse_args():
         "-I",
         action="append",
         dest="dict",
-        help="File that contains words that will be ignored (multiples allowed)."
+        help="File that contains words that will be ignored."
+        " Argument can be passed multiple times."
         " File must contain 1 word per line.",
     )
 
@@ -265,17 +266,19 @@ def parse_args():
         "-e",
         action="append",
         dest="exclude",
-        help="Specify regex for excluding files (multiples allowed)",
+        help="Specify regex for excluding files."
+        " Argument can be passed multiple times.",
     )
 
     parser.add_argument(
         "--skip",
         "-S",
         action="append",
-        help="comma-separated list of files to skip. It "
+        help="Comma-separated list of files to skip. It "
         "accepts globs as well. E.g.: if you want "
         "codespell to skip .eps and .txt files, "
-        'you\'d give "*.eps,*.txt" to this option.',
+        'you\'d give "*.eps,*.txt" to this option.'
+        " Argument can be passed multiple times.",
     )
 
     parser.add_argument(
@@ -284,7 +287,7 @@ def parse_args():
         action="append",
         default=[],
         dest="prefixes",
-        help="Add word prefix (multiples allowed)",
+        help="Add word prefix. Argument can be passed multiple times.",
     )
 
     parser.add_argument(
@@ -302,7 +305,7 @@ def parse_args():
         action="append",
         default=[".h"],
         dest="suffix",
-        help="File name suffix",
+        help="File name suffix. Argument can be passed multiple times.",
     )
 
     parser.add_argument(
