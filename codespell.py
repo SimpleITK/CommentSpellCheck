@@ -2,6 +2,7 @@
 
 import sys
 import os
+import fnmatch
 import glob
 import argparse
 import re
@@ -186,6 +187,17 @@ def exclude_check(name, exclude_list):
     return False
 
 
+def skip_check(name, skip_list):
+    """Return True if ``name`` matches any of the glob pattern listed in
+    ``skip_list``."""
+    if skip_list is None:
+        return False
+    for skip in ",".join(skip_list).split(","):
+        if fnmatch.fnmatch(name, skip):
+            return True
+    return False
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
 
@@ -210,6 +222,12 @@ def parse_args():
     parser.add_argument('--exclude', '-e', action='append',
                         dest='exclude',
                         help='Specify regex for excluding files (multiples allowed)')
+
+    parser.add_argument('--skip', '-S', action='append',
+                        help='comma-separated list of files to skip. It '
+                        'accepts globs as well. E.g.: if you want '
+                        'codespell to skip .eps and .txt files, '
+                        'you\'d give "*.eps,*.txt" to this option.')
 
     parser.add_argument('--prefix', '-p', action='append', default=[],
                         dest='prefixes',
@@ -305,7 +323,7 @@ def main():
             # spell check the files found in f
             for x in dir_entries:
 
-                if exclude_check(x, args.exclude):
+                if exclude_check(x, args.exclude) or skip_check(x, args.skip):
                     if not args.miss:
                         print("\nExcluding", x)
                     continue
@@ -320,7 +338,7 @@ def main():
         else:
 
             # f is a file
-            if exclude_check(f, args.exclude):
+            if exclude_check(f, args.exclude) or skip_check(f, args.skip):
                 if not args.miss:
                     print("\nExcluding", x)
                 continue
