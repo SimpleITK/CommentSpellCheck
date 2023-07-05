@@ -148,6 +148,7 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
                     if len(pre) == len(error_word):
                         if output_lvl > 1:
                             print(f"Prefix '{pre}' matches word")
+                        valid = True
                         break
 
                     # remove the prefix
@@ -156,9 +157,13 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
                         print(f"Trying without '{pre}' prefix: {error_word} -> {wrd}")
                     try:
                         if spell_checker.check(wrd):
+                            valid = True
                             break
                     except BaseException:
                         print(f"Caught an exception for word {error_word} {wrd}")
+
+            if valid:
+                continue
 
             # Try splitting camel case words and checking each sub-word
 
