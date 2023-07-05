@@ -290,7 +290,7 @@ def main():
     if len(args.filenames):
         file_list = args.filenames
     else:
-        sys.exit(0)
+        file_list = ['.']
 
     prefixes = ['sitk', 'itk', 'vtk'] + args.prefixes
 
