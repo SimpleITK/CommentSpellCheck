@@ -124,6 +124,21 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
 
             error_word = error.word
 
+            valid = False
+
+            # Check for contractions
+            for contraction in ["'d", "'s", "'th"]:
+                if error_word.endswith(contraction):
+                    error_word = error_word[: -len(contraction)]
+                    if output_lvl > 1:
+                        print(f"Stripping contraction: {error.word} -> {error_word}")
+                    if spell_checker.check(error_word):
+                        valid = True
+                    break
+
+            if valid:
+                continue
+
             # Check if the bad word starts with a prefix.
             # If so, spell check the word without that prefix.
             #
@@ -152,13 +167,6 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
             sub_words = splitCamelCase(error_word)
             if len(sub_words) > 1 and checkWords(spell_checker, sub_words):
                 continue
-
-            # Check for possessive words
-
-            if error_word.endswith("'s"):
-                wrd = error_word[:-2]
-                if spell_checker.check(wrd):
-                    continue
 
             if output_lvl > 1:
                 msg = f"error: '{error.word}', suggestions: {spell_checker.suggest()}"
