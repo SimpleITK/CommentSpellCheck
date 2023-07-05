@@ -209,7 +209,7 @@ def parse_args():
 
     parser.add_argument('--exclude', '-e', action='append',
                         dest='exclude',
-                        help='Add exclude regex (multiples allowed)')
+                        help='Specify regex for excluding files (multiples allowed)')
 
     parser.add_argument('--prefix', '-p', action='append', default=[],
                         dest='prefixes',
