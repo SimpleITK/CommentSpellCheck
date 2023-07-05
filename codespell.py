@@ -2,6 +2,7 @@
 
 import sys
 import os
+import fnmatch
 import glob
 import argparse
 import re
@@ -14,8 +15,22 @@ from enchant import Dict
 from comment_parser import comment_parser
 
 
-# Split a camel case string into individual words.
+SUFFIX2MIME = {
+    '.h': 'text/x-c++',
+    '.cxx': 'text/x-c++',
+    '.c': 'text/x-c++',
+    '.hxx': 'text/x-c++',
+    '.py': 'text/x-python',
+    '.ruby': 'text/x-ruby',
+    '.java': 'text/x-java-source',
+    '.txt': 'text/plain',
+    '.rst': 'text/plain',
+    '.md': 'text/plain',
+}
+
+
 def splitCamelCase(word):
+    """Split a camel case string into individual words."""
 
     result = []
 
@@ -34,33 +49,17 @@ def splitCamelCase(word):
     return result
 
 
-# Map file suffix to file type.
 def getMimeType(filepath):
-
-    suffix2mime = { '.h': 'text/x-c++',
-                    '.cxx': 'text/x-c++',
-                    '.c': 'text/x-c++',
-                    '.hxx': 'text/x-c++',
-                    '.py': 'text/x-python',
-                    '.ruby': 'text/x-ruby',
-                    '.java': 'text/x-java-source',
-                    '.txt': 'text/plain',
-                    '.rst': 'text/plain',
-                    '.md': 'text/plain',
-                  }
+    """Map `filepath`` extension to file type."""
     name, ext = os.path.splitext(filepath)
-
-    if ext in suffix2mime:
-        return suffix2mime[ext]
-    else:
-        return 'text/plain'
+    return SUFFIX2MIME.get(ext, 'text/plain')
 
 
-#
-#  For a regular text file, we don't need to parse it for comments.  We
-#  just pass every line to the spell checked
-#
 def load_text_file(filename):
+    """
+    For a regular text file, we don't need to parse it for comments. We
+    just pass every line to the spell checked.
+    """
 
     output = []
     lc = 0
@@ -73,10 +72,9 @@ def load_text_file(filename):
     return output
 
 
-# The main spell checking procedure
-#
 def spell_check_file(filename, spell_checker, mime_type='',
                      output_lvl=1, prefixes=[]):
+    """Check spelling in ``filename``."""
 
     if len(mime_type) == 0:
         mime_type = getMimeType(filename)
@@ -175,14 +173,25 @@ def spell_check_file(filename, spell_checker, mime_type='',
     return bad_words
 
 
-# Does the file match any pattern in the exclude_list?  Then exclude it.
-#
 def exclude_check(name, exclude_list):
+    """Return True if ``name`` matches any of the regular expressions listed in
+    ``exclude_list``."""
     if exclude_list is None:
         return False
     for pattern in exclude_list:
         match = re.findall("%s" % pattern, name)
         if len(match) > 0:
+            return True
+    return False
+
+
+def skip_check(name, skip_list):
+    """Return True if ``name`` matches any of the glob pattern listed in
+    ``skip_list``."""
+    if skip_list is None:
+        return False
+    for skip in ",".join(skip_list).split(","):
+        if fnmatch.fnmatch(name, skip):
             return True
     return False
 
@@ -204,13 +213,20 @@ def parse_args():
     parser.add_argument('--vim', '-V', action='store_true', default=False,
                         dest='vim', help='Output results in vim command format')
 
-    parser.add_argument('--dict', '-d', action='append',
+    parser.add_argument('--dict', '-d', '--ignore-words', '-I', action='append',
                         dest='dict',
-                        help='Add a dictionary (multiples allowed)')
+                        help='File that contains words that will be ignored (multiples allowed).'
+                        ' File must contain 1 word per line.')
 
     parser.add_argument('--exclude', '-e', action='append',
                         dest='exclude',
-                        help='Add exclude regex (multiples allowed)')
+                        help='Specify regex for excluding files (multiples allowed)')
+
+    parser.add_argument('--skip', '-S', action='append',
+                        help='comma-separated list of files to skip. It '
+                        'accepts globs as well. E.g.: if you want '
+                        'codespell to skip .eps and .txt files, '
+                        'you\'d give "*.eps,*.txt" to this option.')
 
     parser.add_argument('--prefix', '-p', action='append', default=[],
                         dest='prefixes',
@@ -228,9 +244,9 @@ def parse_args():
     return args
 
 
-# Add the words from a dictionary file into our spell checking dictionary.
-#
 def add_dict(enchant_dict, filename):
+    """Update ``enchant_dict`` spell checking dictionary with the words listed
+    in ``filename`` (one word per line)."""
     with open(filename) as f:
         lines = f.read().splitlines()
 
@@ -274,15 +290,20 @@ def main():
     if len(args.filenames):
         file_list = args.filenames
     else:
-        sys.exit(0)
+        file_list = ['.']
 
     prefixes = ['sitk', 'itk', 'vtk'] + args.prefixes
 
     bad_words = []
 
+    if not args.suffix:
+        suffixes = list(SUFFIX2MIME.keys())
+    else:
+        suffixes = args.suffix
+
     if output_lvl>1:
         print("Prefixes:", prefixes)
-        print("Suffixes:", args.suffix)
+        print("Suffixes:", suffixes)
 
     #
     # Spell check the files
@@ -297,7 +318,7 @@ def main():
 
             # f is a directory, so search for files inside
             dir_entries = []
-            for s in args.suffix:
+            for s in suffixes:
                 dir_entries = dir_entries + glob.glob(f + '/**/*' + s, recursive=True)
 
             if output_lvl>0:
@@ -306,7 +327,7 @@ def main():
             # spell check the files found in f
             for x in dir_entries:
 
-                if exclude_check(x, args.exclude):
+                if exclude_check(x, args.exclude) or skip_check(x, args.skip):
                     if not args.miss:
                         print("\nExcluding", x)
                     continue
@@ -321,7 +342,7 @@ def main():
         else:
 
             # f is a file
-            if exclude_check(f, args.exclude):
+            if exclude_check(f, args.exclude) or skip_check(f, args.skip):
                 if not args.miss:
                     print("\nExcluding", x)
                 continue
