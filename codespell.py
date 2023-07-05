@@ -106,6 +106,8 @@ def spell_check_comment(
             if error.word.startswith(pre):
                 # check if the word is only the prefix
                 if len(pre) == len(error.word):
+                    if output_lvl > 1:
+                        print(f"Prefix '{pre}' matches word")
                     break
 
                 # remove the prefix
