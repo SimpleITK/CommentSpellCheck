@@ -349,9 +349,12 @@ def parse_args():
     return args
 
 
-def add_dict(enchant_dict, filename):
+def add_dict(enchant_dict, filename, verbose=False):
     """Update ``enchant_dict`` spell checking dictionary with the words listed
     in ``filename`` (one word per line)."""
+    if verbose:
+        print(f"Additional dictionary: {filename}")
+
     with open(filename) as f:
         lines = f.read().splitlines()
 
@@ -366,20 +369,6 @@ def main():
 
     sitk_dict = Dict("en_US")
 
-    # Load the dictionary files
-    #
-    initial_dct = Path(__file__).parent / "additional_dictionary.txt"
-    if not initial_dct.exists():
-        initial_dct = None
-    else:
-        add_dict(sitk_dict, str(initial_dct))
-
-    if args.dict is not None:
-        for d in args.dict:
-            add_dict(sitk_dict, d)
-
-    spell_checker = SpellChecker(sitk_dict, filters=[EmailFilter, URLFilter])
-
     # Set the amount of debugging messages to print.
     output_lvl = 1
     if args.brief:
@@ -389,6 +378,20 @@ def main():
             output_lvl = 2
     if args.miss:
         output_lvl = -1
+
+    # Load the dictionary files
+    #
+    initial_dct = Path(__file__).parent / "additional_dictionary.txt"
+    if not initial_dct.exists():
+        initial_dct = None
+    else:
+        add_dict(sitk_dict, str(initial_dct), any([args.brief, output_lvl >= 0]))
+
+    if args.dict is not None:
+        for d in args.dict:
+            add_dict(sitk_dict, d, any([args.brief, output_lvl >= 0]))
+
+    spell_checker = SpellChecker(sitk_dict, filters=[EmailFilter, URLFilter])
 
     file_list = []
     if len(args.filenames):
