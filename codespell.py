@@ -400,10 +400,7 @@ def main():
 
     bad_words = []
 
-    if not args.suffix:
-        suffixes = list(SUFFIX2MIME.keys())
-    else:
-        suffixes = args.suffix
+    suffixes = [*set(args.suffix)]  # remove duplicates
 
     if output_lvl > 1:
         print(f"Prefixes: {prefixes}")
