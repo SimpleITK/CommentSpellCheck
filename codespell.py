@@ -24,16 +24,16 @@ except PackageNotFoundError:
 
 
 SUFFIX2MIME = {
-    '.h': 'text/x-c++',
-    '.cxx': 'text/x-c++',
-    '.c': 'text/x-c++',
-    '.hxx': 'text/x-c++',
-    '.py': 'text/x-python',
-    '.ruby': 'text/x-ruby',
-    '.java': 'text/x-java-source',
-    '.txt': 'text/plain',
-    '.rst': 'text/plain',
-    '.md': 'text/plain',
+    ".h": "text/x-c++",
+    ".cxx": "text/x-c++",
+    ".c": "text/x-c++",
+    ".hxx": "text/x-c++",
+    ".py": "text/x-python",
+    ".ruby": "text/x-ruby",
+    ".java": "text/x-java-source",
+    ".txt": "text/plain",
+    ".rst": "text/plain",
+    ".md": "text/plain",
 }
 
 
@@ -49,7 +49,7 @@ def splitCamelCase(word):
             if current_word != "":
                 result.append(current_word)
             current_word = ""
-        current_word = current_word+x
+        current_word = current_word + x
 
     if len(current_word):
         result.append(current_word)
@@ -60,7 +60,7 @@ def splitCamelCase(word):
 def getMimeType(filepath):
     """Map `filepath`` extension to file type."""
     name, ext = os.path.splitext(filepath)
-    return SUFFIX2MIME.get(ext, 'text/plain')
+    return SUFFIX2MIME.get(ext, "text/plain")
 
 
 def load_text_file(filename):
@@ -73,15 +73,14 @@ def load_text_file(filename):
     lc = 0
     with open(filename) as fp:
         for line in fp:
-           line = line.strip()
-           lc = lc + 1
-           comment = comment_parser.common.Comment(line, lc)
-           output.append(comment)
+            line = line.strip()
+            lc = lc + 1
+            comment = comment_parser.common.Comment(line, lc)
+            output.append(comment)
     return output
 
 
-def spell_check_file(filename, spell_checker, mime_type='',
-                     output_lvl=1, prefixes=[]):
+def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefixes=[]):
     """Check spelling in ``filename``."""
 
     if len(mime_type) == 0:
@@ -91,7 +90,7 @@ def spell_check_file(filename, spell_checker, mime_type='',
         print("spell_check_file:", filename, ",", mime_type)
 
     # Returns a list of comment_parser.parsers.common.Comments
-    if mime_type == 'text/plain':
+    if mime_type == "text/plain":
         clist = load_text_file(filename)
     else:
         try:
@@ -119,13 +118,12 @@ def spell_check_file(filename, spell_checker, mime_type='',
             #
             for pre in prefixes:
                 if error.word.startswith(pre):
-
                     # check if the word is only the prefix
                     if len(pre) == len(error.word):
                         continue
 
                     # remove the prefix
-                    wrd = error.word[len(pre):]
+                    wrd = error.word[len(pre) :]
                     if output_lvl > 1:
                         print("Trying without prefix: ", error.word, wrd)
                     try:
@@ -155,8 +153,14 @@ def spell_check_file(filename, spell_checker, mime_type='',
                     continue
 
             if output_lvl > 1:
-                msg = 'error: ' + '\'' + error.word + '\', ' \
-                      + 'suggestions: ' + str(spell_checker.suggest())
+                msg = (
+                    "error: "
+                    + "'"
+                    + error.word
+                    + "', "
+                    + "suggestions: "
+                    + str(spell_checker.suggest())
+                )
             else:
                 msg = error.word
             mistakes.append(msg)
@@ -207,48 +211,113 @@ def skip_check(name, skip_list):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('filenames', nargs='*')
+    parser.add_argument("filenames", nargs="*")
 
-    parser.add_argument('--brief', '-b', action='store_true', default=False,
-                        dest='brief', help='Make output brief')
+    parser.add_argument(
+        "--brief",
+        "-b",
+        action="store_true",
+        default=False,
+        dest="brief",
+        help="Make output brief",
+    )
 
-    parser.add_argument('--verbose', '-v', action='store_true', default=False,
-                        dest='verbose', help='Make output verbose')
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        default=False,
+        dest="verbose",
+        help="Make output verbose",
+    )
 
-    parser.add_argument('--first', '-f', action='store_true', default=False,
-                        dest='first', help='Show only first occurrence of a mispelling')
+    parser.add_argument(
+        "--first",
+        "-f",
+        action="store_true",
+        default=False,
+        dest="first",
+        help="Show only first occurrence of a mispelling",
+    )
 
-    parser.add_argument('--vim', '-V', action='store_true', default=False,
-                        dest='vim', help='Output results in vim command format')
+    parser.add_argument(
+        "--vim",
+        "-V",
+        action="store_true",
+        default=False,
+        dest="vim",
+        help="Output results in vim command format",
+    )
 
-    parser.add_argument('--dict', '-d', '--ignore-words', '-I', action='append',
-                        dest='dict',
-                        help='File that contains words that will be ignored (multiples allowed).'
-                        ' File must contain 1 word per line.')
+    parser.add_argument(
+        "--dict",
+        "-d",
+        "--ignore-words",
+        "-I",
+        action="append",
+        dest="dict",
+        help="File that contains words that will be ignored (multiples allowed)."
+        " File must contain 1 word per line.",
+    )
 
-    parser.add_argument('--exclude', '-e', action='append',
-                        dest='exclude',
-                        help='Specify regex for excluding files (multiples allowed)')
+    parser.add_argument(
+        "--exclude",
+        "-e",
+        action="append",
+        dest="exclude",
+        help="Specify regex for excluding files (multiples allowed)",
+    )
 
-    parser.add_argument('--skip', '-S', action='append',
-                        help='comma-separated list of files to skip. It '
-                        'accepts globs as well. E.g.: if you want '
-                        'codespell to skip .eps and .txt files, '
-                        'you\'d give "*.eps,*.txt" to this option.')
+    parser.add_argument(
+        "--skip",
+        "-S",
+        action="append",
+        help="comma-separated list of files to skip. It "
+        "accepts globs as well. E.g.: if you want "
+        "codespell to skip .eps and .txt files, "
+        'you\'d give "*.eps,*.txt" to this option.',
+    )
 
-    parser.add_argument('--prefix', '-p', action='append', default=[],
-                        dest='prefixes',
-                        help='Add word prefix (multiples allowed)')
+    parser.add_argument(
+        "--prefix",
+        "-p",
+        action="append",
+        default=[],
+        dest="prefixes",
+        help="Add word prefix (multiples allowed)",
+    )
 
-    parser.add_argument('--miss', '-m', action='store_true', default=False,
-                        dest='miss', help='Only output the misspelt words')
+    parser.add_argument(
+        "--miss",
+        "-m",
+        action="store_true",
+        default=False,
+        dest="miss",
+        help="Only output the misspelt words",
+    )
 
-    parser.add_argument('--suffix', '-s', action='append', default=[".h"],
-                        dest='suffix', help='File name suffix')
+    parser.add_argument(
+        "--suffix",
+        "-s",
+        action="append",
+        default=[".h"],
+        dest="suffix",
+        help="File name suffix",
+    )
 
-    parser.add_argument('--type', '-t', action='store', default='',
-                        dest='mime_type', help='Set file mime type. File name suffix will be ignored.')
-    parser.add_argument( '--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument(
+        "--type",
+        "-t",
+        action="store",
+        default="",
+        dest="mime_type",
+        help="Set file mime type. File name suffix will be ignored.",
+    )
+
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
+
     args = parser.parse_args()
     return args
 
@@ -268,11 +337,11 @@ def add_dict(enchant_dict, filename):
 def main():
     args = parse_args()
 
-    sitk_dict = Dict('en_US')
+    sitk_dict = Dict("en_US")
 
     # Load the dictionary files
     #
-    initial_dct = Path(__file__).parent / 'additional_dictionary.txt'
+    initial_dct = Path(__file__).parent / "additional_dictionary.txt"
     if not initial_dct.exists():
         initial_dct = None
     else:
@@ -282,8 +351,7 @@ def main():
         for d in args.dict:
             add_dict(sitk_dict, d)
 
-    spell_checker = SpellChecker(sitk_dict,
-                                 filters=[EmailFilter, URLFilter])
+    spell_checker = SpellChecker(sitk_dict, filters=[EmailFilter, URLFilter])
 
     # Set the amount of debugging messages to print.
     output_lvl = 1
@@ -299,9 +367,9 @@ def main():
     if len(args.filenames):
         file_list = args.filenames
     else:
-        file_list = ['.']
+        file_list = ["."]
 
-    prefixes = ['sitk', 'itk', 'vtk'] + args.prefixes
+    prefixes = ["sitk", "itk", "vtk"] + args.prefixes
 
     bad_words = []
 
@@ -310,7 +378,7 @@ def main():
     else:
         suffixes = args.suffix
 
-    if output_lvl>1:
+    if output_lvl > 1:
         print("Prefixes:", prefixes)
         print("Suffixes:", suffixes)
 
@@ -318,24 +386,21 @@ def main():
     # Spell check the files
     #
     for f in file_list:
-
         if not args.miss:
             print("\nChecking", f)
 
         # If f is a directory, recursively check for files in it.
         if os.path.isdir(f):
-
             # f is a directory, so search for files inside
             dir_entries = []
             for s in suffixes:
-                dir_entries = dir_entries + glob.glob(f + '/**/*' + s, recursive=True)
+                dir_entries = dir_entries + glob.glob(f + "/**/*" + s, recursive=True)
 
-            if output_lvl>0:
+            if output_lvl > 0:
                 print(dir_entries)
 
             # spell check the files found in f
             for x in dir_entries:
-
                 if exclude_check(x, args.exclude) or skip_check(x, args.skip):
                     if not args.miss:
                         print("\nExcluding", x)
@@ -343,13 +408,16 @@ def main():
 
                 if not args.miss:
                     print("\nChecking", x)
-                result = spell_check_file(x, spell_checker, args.mime_type,
-                                          output_lvl=output_lvl,
-                                          prefixes=prefixes)
+                result = spell_check_file(
+                    x,
+                    spell_checker,
+                    args.mime_type,
+                    output_lvl=output_lvl,
+                    prefixes=prefixes,
+                )
                 bad_words = sorted(bad_words + result)
 
         else:
-
             # f is a file
             if exclude_check(f, args.exclude) or skip_check(f, args.skip):
                 if not args.miss:
@@ -357,11 +425,15 @@ def main():
                 continue
 
             # f is a file, so spell check it
-            result = spell_check_file(f, spell_checker, args.mime_type,
-                                      output_lvl=output_lvl, prefixes=prefixes)
+            result = spell_check_file(
+                f,
+                spell_checker,
+                args.mime_type,
+                output_lvl=output_lvl,
+                prefixes=prefixes,
+            )
 
             bad_words = sorted(bad_words + result)
-
 
     # Done spell checking.  Print out all the words not found in our dictionary.
     #
@@ -371,18 +443,17 @@ def main():
     previous_word = ""
 
     for misspelled_word, found_file, line_num in bad_words:
-
-        if (misspelled_word != previous_word):
-            print("\n", misspelled_word,":", sep='')
+        if misspelled_word != previous_word:
+            print("\n", misspelled_word, ":", sep="")
 
         if (misspelled_word == previous_word) and args.first:
-            sys.stderr.write('.')
+            sys.stderr.write(".")
             continue
 
         if args.vim:
-            print("    vim +", line_num, " ", found_file, sep='', file=sys.stderr)
+            print("    vim +", line_num, " ", found_file, sep="", file=sys.stderr)
         else:
-            print("    ", found_file, ", ", line_num, sep='', file=sys.stderr)
+            print("    ", found_file, ", ", line_num, sep="", file=sys.stderr)
 
         previous_word = misspelled_word
 
@@ -392,5 +463,5 @@ def main():
     sys.exit(len(bad_words))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

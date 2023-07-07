@@ -23,7 +23,7 @@ class TestCodespell(unittest.TestCase):
                 "--verbose",
                 "--dict",
                 "tests/dict.txt",
-                "tests/example.h"
+                "tests/example.h",
             ]
         )
         print("Return code:", runresult.returncode)
@@ -42,11 +42,9 @@ class TestCodespell(unittest.TestCase):
                 ".py",
                 "--suffix",
                 ".md",
-                "."
+                ".",
             ]
         )
         print("Return code:", runresult.returncode)
         if runresult.returncode:
             self.fail("Self code test: codespell process returned bad code")
-
-
