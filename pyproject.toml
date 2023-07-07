@@ -29,3 +29,8 @@ codespell = "codespell:main"
 
 [tool.setuptools_scm]
 local_scheme = "dirty-tag"
+
+[tool.flake8]
+max-line-length = 88
+ignore = ['E203', 'W503']
+max_complexity = 32
