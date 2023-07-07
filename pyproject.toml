@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=7.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "SimpleITKSpellChecking"
-version = "0.0.1"
 authors = [
   { name="David Chen", email="dchen@mail.nih.gov" },
 ]
@@ -16,7 +15,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dynamic = ["dependencies"]
+dynamic = ["dependencies", "version"]
 
 [project.urls]
 "Homepage" = "https://github.com/SimpleITK/SimpleITKSpellChecking"
@@ -28,3 +27,5 @@ dependencies = {file = ["requirements.txt"]}
 [project.scripts]
 codespell = "codespell:main"
 
+[tool.setuptools_scm]
+local_scheme = "dirty-tag"
