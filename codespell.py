@@ -14,6 +14,14 @@ from enchant import Dict
 
 from comment_parser import comment_parser
 
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("SimpleITKSpellChecking")
+except PackageNotFoundError:
+    # package is not installed
+    pass
+
 
 SUFFIX2MIME = {
     '.h': 'text/x-c++',
@@ -240,6 +248,7 @@ def parse_args():
 
     parser.add_argument('--type', '-t', action='store', default='',
                         dest='mime_type', help='Set file mime type. File name suffix will be ignored.')
+    parser.add_argument( '--version', action='version', version=f'%(prog)s {__version__}')
     args = parser.parse_args()
     return args
 
