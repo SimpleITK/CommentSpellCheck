@@ -120,7 +120,7 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
                 if error.word.startswith(pre):
                     # check if the word is only the prefix
                     if len(pre) == len(error.word):
-                        continue
+                        break
 
                     # remove the prefix
                     wrd = error.word[len(pre) :]
@@ -128,7 +128,7 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
                         print("Trying without prefix: ", error.word, wrd)
                     try:
                         if spell_checker.check(wrd):
-                            continue
+                            break
                     except BaseException:
                         print("Caught an exception for word", error.word, wrd)
 
