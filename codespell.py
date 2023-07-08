@@ -90,8 +90,7 @@ def spell_check_comment(
     """Check comment and return list of identified issues if any."""
 
     if output_lvl > 1:
-        print(f"Comment: {c}")
-        print(type(c))
+        print(f"Line {c.line_number()}: {c}")
 
     mistakes = []
     spell_checker.set_text(c.text())
