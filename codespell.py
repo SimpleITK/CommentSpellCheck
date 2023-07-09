@@ -81,6 +81,70 @@ def load_text_file(filename):
     return output
 
 
+def spell_check_comment(
+    spell_checker: SpellChecker,
+    c: comment_parser.common.Comment,
+    prefixes: list[str] = [],
+    output_lvl=2,
+) -> list[str]:
+    """Check comment and return list of identified issues if any."""
+
+    if output_lvl > 1:
+        print(f"Comment: {c}")
+        print(type(c))
+
+    mistakes = []
+    spell_checker.set_text(c.text())
+
+    for error in spell_checker:
+        if output_lvl > 1:
+            print(f"Error: {error.word}")
+
+        # Check if the bad word starts with a prefix.
+        # If so, spell check the word without that prefix.
+        for pre in prefixes:
+            if error.word.startswith(pre):
+                # check if the word is only the prefix
+                if len(pre) == len(error.word):
+                    break
+
+                # remove the prefix
+                wrd = error.word[len(pre) :]
+                if output_lvl > 1:
+                    print(f"Trying without '{pre}' prefix: {error.word} -> {wrd}")
+                try:
+                    if spell_checker.check(wrd):
+                        break
+                except BaseException:
+                    print(f"Caught an exception for word {error.word} {wrd}")
+
+        # Try splitting camel case words and checking each sub-word
+        if output_lvl > 1:
+            print(f"Trying splitting camel case word: {error.word}")
+        sub_words = splitCamelCase(error.word)
+        if len(sub_words) > 1:
+            ok_flag = True
+            for s in sub_words:
+                if not spell_checker.check(s):
+                    ok_flag = False
+            if ok_flag:
+                continue
+
+        # Check for possessive words
+        if error.word.endswith("'s"):
+            wrd = error.word[:-2]
+            if spell_checker.check(wrd):
+                continue
+
+        if output_lvl > 1:
+            msg = f"error: '{error.word}', suggestions: {spell_checker.suggest()}"
+        else:
+            msg = error.word
+        mistakes.append(msg)
+
+    return mistakes
+
+
 def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefixes=[]):
     """Check spelling in ``filename``."""
 
@@ -103,62 +167,9 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
     bad_words = []
 
     for c in clist:
-        if output_lvl > 1:
-            print(f"Comment: {c}")
-            print(type(c))
-
-        mistakes = []
-        spell_checker.set_text(c.text())
-
-        for error in spell_checker:
-            if output_lvl > 1:
-                print(f"Error: {error.word}")
-
-            # Check if the bad word starts with a prefix.
-            # If so, spell check the word without that prefix.
-            #
-            for pre in prefixes:
-                if error.word.startswith(pre):
-                    # check if the word is only the prefix
-                    if len(pre) == len(error.word):
-                        break
-
-                    # remove the prefix
-                    wrd = error.word[len(pre) :]
-                    if output_lvl > 1:
-                        print(f"Trying without '{pre}' prefix: {error.word} -> {wrd}")
-                    try:
-                        if spell_checker.check(wrd):
-                            break
-                    except BaseException:
-                        print(f"Caught an exception for word {error.word} {wrd}")
-
-            # Try splitting camel case words and checking each sub-word
-
-            if output_lvl > 1:
-                print(f"Trying splitting camel case word: {error.word}")
-            sub_words = splitCamelCase(error.word)
-            if len(sub_words) > 1:
-                ok_flag = True
-                for s in sub_words:
-                    if not spell_checker.check(s):
-                        ok_flag = False
-                if ok_flag:
-                    continue
-
-            # Check for possessive words
-
-            if error.word.endswith("'s"):
-                wrd = error.word[:-2]
-                if spell_checker.check(wrd):
-                    continue
-
-            if output_lvl > 1:
-                msg = f"error: '{error.word}', suggestions: {spell_checker.suggest()}"
-            else:
-                msg = error.word
-            mistakes.append(msg)
-
+        mistakes = spell_check_comment(
+            spell_checker, c, prefixes=prefixes, output_lvl=output_lvl
+        )
         if len(mistakes):
             if output_lvl > 0:
                 print(f"\nLine number {c.line_number()}")
