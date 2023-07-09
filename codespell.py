@@ -58,15 +58,16 @@ def splitCamelCase(word):
 
 
 def getMimeType(filepath):
-    """Map `filepath`` extension to file type."""
+    """Map ``filepath`` extension to file type."""
     name, ext = os.path.splitext(filepath)
     return SUFFIX2MIME.get(ext, "text/plain")
 
 
 def load_text_file(filename):
-    """
+    """Parse plain text file as list of ``comment_parser.common.Comment``.
+
     For a regular text file, we don't need to parse it for comments. We
-    just pass every line to the spell checked.
+    just pass every line to the spellchecker.
     """
 
     output = []
