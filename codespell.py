@@ -104,46 +104,48 @@ def spell_check_comment(
     spell_checker.set_text(c.text())
 
     for error in spell_checker:
+        error_word = error.word
+
         if output_lvl > 1:
-            print(f"Error: {error.word}")
+            print(f"Error: {error_word}")
 
         # Check if the bad word starts with a prefix.
         # If so, spell check the word without that prefix.
         for pre in prefixes:
-            if error.word.startswith(pre):
+            if error_word.startswith(pre):
                 # check if the word is only the prefix
-                if len(pre) == len(error.word):
+                if len(pre) == len(error_word):
                     if output_lvl > 1:
                         print(f"Prefix '{pre}' matches word")
                     break
 
                 # remove the prefix
-                wrd = error.word[len(pre) :]
+                wrd = error_word[len(pre) :]
                 if output_lvl > 1:
-                    print(f"Trying without '{pre}' prefix: {error.word} -> {wrd}")
+                    print(f"Trying without '{pre}' prefix: {error_word} -> {wrd}")
                 try:
                     if spell_checker.check(wrd):
                         break
                 except BaseException:
-                    print(f"Caught an exception for word {error.word} {wrd}")
+                    print(f"Caught an exception for word {error_word} {wrd}")
 
         # Try splitting camel case words and checking each sub-word
         if output_lvl > 1:
-            print(f"Trying splitting camel case word: {error.word}")
-        sub_words = splitCamelCase(error.word)
+            print(f"Trying splitting camel case word: {error_word}")
+        sub_words = splitCamelCase(error_word)
         if len(sub_words) > 1 and spell_check_words(spell_checker, sub_words):
             continue
 
         # Check for possessive words
-        if error.word.endswith("'s"):
-            wrd = error.word[:-2]
+        if error_word.endswith("'s"):
+            wrd = error_word[:-2]
             if spell_checker.check(wrd):
                 continue
 
         if output_lvl > 1:
-            msg = f"error: '{error.word}', suggestions: {spell_checker.suggest()}"
+            msg = f"error: '{error_word}', suggestions: {spell_checker.suggest()}"
         else:
-            msg = error.word
+            msg = error_word
         mistakes.append(msg)
 
     return mistakes
