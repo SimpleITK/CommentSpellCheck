@@ -81,6 +81,14 @@ def load_text_file(filename):
     return output
 
 
+def spell_check_words(spell_checker: SpellChecker, words: list[str]):
+    """Check each word and report False if at least one has an spelling error."""
+    for word in words:
+        if not spell_checker.check(word):
+            return False
+    return True
+
+
 def spell_check_comment(
     spell_checker: SpellChecker,
     c: comment_parser.common.Comment,
@@ -123,13 +131,8 @@ def spell_check_comment(
         if output_lvl > 1:
             print(f"Trying splitting camel case word: {error.word}")
         sub_words = splitCamelCase(error.word)
-        if len(sub_words) > 1:
-            ok_flag = True
-            for s in sub_words:
-                if not spell_checker.check(s):
-                    ok_flag = False
-            if ok_flag:
-                continue
+        if len(sub_words) > 1 and spell_check_words(spell_checker, sub_words):
+            continue
 
         # Check for possessive words
         if error.word.endswith("'s"):
