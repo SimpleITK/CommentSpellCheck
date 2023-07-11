@@ -18,6 +18,11 @@
 //
 // Additional dictionary test word:
 // TarHeels
+//
+// Contraction test words:
+// With multiple parameters OR'd to compose the flag.
+// With node id's.
+// With the itemIndex'th where itemIndex is a variable name.
 
 #include <stdio.h>
 

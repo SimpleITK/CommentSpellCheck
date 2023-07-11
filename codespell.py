@@ -109,6 +109,24 @@ def spell_check_comment(
         if output_lvl > 1:
             print(f"Error: {error_word}")
 
+        valid = False
+
+        # Check for contractions
+        for contraction in ["'d", "'s", "'th"]:
+            if error_word.endswith(contraction):
+                original_error_word = error_word
+                error_word = error_word[: -len(contraction)]
+                if output_lvl > 1:
+                    print(
+                        f"Stripping contraction: {original_error_word} -> {error_word}"
+                    )
+                if spell_checker.check(error_word):
+                    valid = True
+                break
+
+        if valid:
+            continue
+
         # Check if the bad word starts with a prefix.
         # If so, spell check the word without that prefix.
         for pre in prefixes:
@@ -135,12 +153,6 @@ def spell_check_comment(
         sub_words = splitCamelCase(error_word)
         if len(sub_words) > 1 and spell_check_words(spell_checker, sub_words):
             continue
-
-        # Check for possessive words
-        if error_word.endswith("'s"):
-            wrd = error_word[:-2]
-            if spell_checker.check(wrd):
-                continue
 
         if output_lvl > 1:
             msg = f"error: '{error_word}', suggestions: {spell_checker.suggest()}"
