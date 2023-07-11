@@ -135,6 +135,7 @@ def spell_check_comment(
                 if len(pre) == len(error_word):
                     if output_lvl > 1:
                         print(f"Prefix '{pre}' matches word")
+                    valid = True
                     break
 
                 # remove the prefix
@@ -143,9 +144,13 @@ def spell_check_comment(
                     print(f"Trying without '{pre}' prefix: {error_word} -> {wrd}")
                 try:
                     if spell_checker.check(wrd):
+                        valid = True
                         break
                 except BaseException:
                     print(f"Caught an exception for word {error_word} {wrd}")
+
+        if valid:
+            continue
 
         # Try splitting camel case words and checking each sub-word
         if output_lvl > 1:
