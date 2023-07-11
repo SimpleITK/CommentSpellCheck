@@ -37,6 +37,9 @@ SUFFIX2MIME = {
 }
 
 
+CONTRACTIONS = ["'d", "'s", "'th"]
+
+
 def splitCamelCase(word):
     """Split a camel case string into individual words."""
 
@@ -112,7 +115,7 @@ def spell_check_comment(
         valid = False
 
         # Check for contractions
-        for contraction in ["'d", "'s", "'th"]:
+        for contraction in CONTRACTIONS:
             if error_word.endswith(contraction):
                 original_error_word = error_word
                 error_word = error_word[: -len(contraction)]
