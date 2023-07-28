@@ -1,6 +1,6 @@
-# SimpleITKSpellChecking
+# CommentSpellChecking
 
-![python testing](https://github.com/SimpleITK/SimpleITKSpellChecking/actions/workflows/python-app.yml/badge.svg)
+![python testing](https://github.com/SimpleITK/CommentSpellChecking/actions/workflows/python-app.yml/badge.svg)
 
 
 A script that automatically spell checks the comments of a code base.

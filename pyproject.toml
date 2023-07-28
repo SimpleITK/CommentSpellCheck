@@ -18,8 +18,8 @@ classifiers = [
 dynamic = ["dependencies", "version"]
 
 [project.urls]
-"Homepage" = "https://github.com/SimpleITK/SimpleITKSpellChecking"
-"Bug Tracker" = "https://github.com/SimpleITK/SimpleITKSpellChecking"
+"Homepage" = "https://github.com/SimpleITK/CommentSpellCheck"
+"Bug Tracker" = "https://github.com/SimpleITK/CommentSpellCheck"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

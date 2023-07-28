@@ -17,7 +17,7 @@ from comment_parser import comment_parser
 from importlib.metadata import version, PackageNotFoundError
 
 try:
-    __version__ = version("SimpleITKSpellChecking")
+    __version__ = version("CommentSpellChecking")
 except PackageNotFoundError:
     # package is not installed
     pass
