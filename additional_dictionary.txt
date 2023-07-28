@@ -923,7 +923,6 @@ clientdata
 closedness
 codebook
 codebooks
-codespell
 codeword
 codewords
 codimension

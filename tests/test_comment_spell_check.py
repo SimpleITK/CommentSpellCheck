@@ -3,23 +3,23 @@ import subprocess
 import os
 
 
-class TestCodespell(unittest.TestCase):
+class TestCommentSpellCheck(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print("\nSetting up codespell tests")
+        print("\nSetting up comment_spell_check tests")
 
     @classmethod
     def tearDownClass(cls):
-        print("\nTearing down dicom2stl tests")
+        print("\nTearing down comment_spell_check tests")
 
-    def test_codespell(self):
-        print("\nCodespell simple test")
+    def test_comment_spell_check(self):
+        print("\nCommand_spell_check simple test")
         cwd = os.getcwd()
         print(cwd)
         runresult = subprocess.run(
             [
                 "python",
-                "codespell.py",
+                "comment_spell_check.py",
                 "--verbose",
                 "--dict",
                 "tests/dict.txt",
@@ -30,15 +30,15 @@ class TestCodespell(unittest.TestCase):
         )
         print("Return code:", runresult.returncode)
         if runresult.returncode:
-            self.fail("Simple test: codespell process returned bad code")
+            self.fail("Simple test: comment_spell_check.py process returned bad code")
 
-        print("\nCodespell test on itself")
+        print("\nComment_spell_check test on itself")
         cwd = os.getcwd()
         print(cwd)
         runresult = subprocess.run(
             [
                 "python",
-                "codespell.py",
+                "comment_spell_check.py",
                 "--verbose",
                 "--prefix",
                 "myprefix",
@@ -51,4 +51,6 @@ class TestCodespell(unittest.TestCase):
         )
         print("Return code:", runresult.returncode)
         if runresult.returncode:
-            self.fail("Self code test: codespell process returned bad code")
+            self.fail(
+                "Self code test: comment_spell_check.py process returned bad code"
+            )
