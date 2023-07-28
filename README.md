@@ -8,7 +8,7 @@ It is intended to be run on the SimpleITK and ITK code bases.
 
 Here is how it is typically run:
 
-    python codespell.py --exclude Ancillary $SIMPLEITK_SOURCE_DIR/Code
+    python comment_spell_check.py --exclude Ancillary $SIMPLEITK_SOURCE_DIR/Code
 
 This command will recursively find all the '.h' files in a directory,
 extract the C/C++ comments from the code, and run a spell checker on them.

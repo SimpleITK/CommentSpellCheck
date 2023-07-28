@@ -317,7 +317,7 @@ def parse_args():
         action="append",
         help="Comma-separated list of files to skip. It "
         "accepts globs as well. E.g.: if you want "
-        "codespell to skip .eps and .txt files, "
+        "coment_spell_check.py to skip .eps and .txt files, "
         'you\'d give "*.eps,*.txt" to this option.'
         " Argument can be passed multiple times.",
     )
@@ -358,9 +358,9 @@ def parse_args():
         help="Set file mime type. File name suffix will be ignored.",
     )
 
-    parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {__version__}"
-    )
+    #    parser.add_argument(
+    #        "--version", action="version", version=f"%(prog)s {__version__}"
+    #    )
 
     args = parser.parse_args()
     return args

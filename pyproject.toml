@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "setuptools_scm[toml]>=7.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "SimpleITKSpellChecking"
+name = "comment_spell_check"
 authors = [
   { name="David Chen", email="dchen@mail.nih.gov" },
 ]
@@ -25,7 +25,7 @@ dynamic = ["dependencies", "version"]
 dependencies = {file = ["requirements.txt"]}
 
 [project.scripts]
-codespell = "codespell:main"
+comment_spell_check = "comment_spell_check:main"
 
 [tool.setuptools_scm]
 local_scheme = "dirty-tag"
