@@ -16,6 +16,8 @@ from comment_parser import comment_parser
 
 from importlib.metadata import version, PackageNotFoundError
 
+__version__ = "unknown"
+
 try:
     __version__ = version("CommentSpellCheck")
 except PackageNotFoundError:
@@ -358,9 +360,9 @@ def parse_args():
         help="Set file mime type. File name suffix will be ignored.",
     )
 
-    #    parser.add_argument(
-    #        "--version", action="version", version=f"%(prog)s {__version__}"
-    #    )
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
 
     args = parser.parse_args()
     return args
