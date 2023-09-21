@@ -16,6 +16,8 @@ from comment_parser import comment_parser
 
 from importlib.metadata import version, PackageNotFoundError
 
+__version__ = "unknown"
+
 try:
     __version__ = version("CommentSpellCheck")
 except PackageNotFoundError:
@@ -358,9 +360,7 @@ def parse_args():
         help="Set file mime type. File name suffix will be ignored.",
     )
 
-    #    parser.add_argument(
-    #        "--version", action="version", version=f"%(prog)s {__version__}"
-    #    )
+    parser.add_argument("--version", action="version", version=f"{__version__}")
 
     args = parser.parse_args()
     return args
@@ -378,7 +378,7 @@ def add_dict(enchant_dict, filename, verbose=False):
     # You better not have more than 1 word in a line
     for wrd in lines:
         if not enchant_dict.check(wrd):
-            enchant_dict.add_to_pwl(wrd)
+            enchant_dict.add(wrd)
 
 
 def main():
