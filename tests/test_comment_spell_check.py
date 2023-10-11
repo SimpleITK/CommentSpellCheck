@@ -62,7 +62,7 @@ class TestCommentSpellCheck(unittest.TestCase):
                 "comment_spell_check.py",
                 "--version",
             ],
-            stdout = subprocess.PIPE,
+            stdout=subprocess.PIPE,
         )
         print("Return code:", runresult.returncode)
         print("Version: ", runresult.stdout)
@@ -72,6 +72,4 @@ class TestCommentSpellCheck(unittest.TestCase):
                 "Self code test: comment_spell_check.py process returned bad code"
             )
         if "unknown" in version_string:
-            self.fail(
-                "Self code test: version string contains \'unknown\'"
-            )
+            self.fail("Self code test: version string contains 'unknown'")
