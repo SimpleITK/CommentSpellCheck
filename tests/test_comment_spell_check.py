@@ -12,10 +12,8 @@ class TestCommentSpellCheck(unittest.TestCase):
     def tearDownClass(cls):
         print("\nTearing down comment_spell_check tests")
 
-    def test_comment_spell_check(self):
-        print("\nCommand_spell_check simple test")
-        cwd = os.getcwd()
-        print(cwd)
+    def test_basic(self):
+        print("\nCommand_spell_check: Basic Test")
         runresult = subprocess.run(
             [
                 "python",
@@ -26,15 +24,16 @@ class TestCommentSpellCheck(unittest.TestCase):
                 "--prefix",
                 "myprefix",
                 "tests/example.h",
-            ]
+            ],
+            stdout=subprocess.PIPE,
         )
-        print("Return code:", runresult.returncode)
         if runresult.returncode:
-            self.fail("Simple test: comment_spell_check.py process returned bad code")
+            self.fail("\nBasic Test: FAIL")
+            output_string = str(runresult.stdout)
+            print("\nTest output:", output_string)
 
-        print("\nComment_spell_check test on itself")
-        cwd = os.getcwd()
-        print(cwd)
+    def test_codebase(self):
+        print("\nComment_spell_check: Code Base Test")
         runresult = subprocess.run(
             [
                 "python",
@@ -47,15 +46,16 @@ class TestCommentSpellCheck(unittest.TestCase):
                 "--suffix",
                 ".md",
                 ".",
-            ]
+            ],
+            stdout=subprocess.PIPE,
         )
-        print("Return code:", runresult.returncode)
         if runresult.returncode:
-            self.fail(
-                "Self code test: comment_spell_check.py process returned bad code"
-            )
+            self.fail("\nCode Base Test: FAIL")
+            output_string = str(runresult.stdout)
+            print("\nTest output:", output_string)
 
-        print("\nTest version")
+    def test_version(self):
+        print("\nComment_spell_check: Version Test")
         runresult = subprocess.run(
             [
                 "python",
@@ -64,12 +64,8 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
         )
-        print("Return code:", runresult.returncode)
-        print("Version: ", runresult.stdout)
         version_string = str(runresult.stdout)
         if runresult.returncode:
-            self.fail(
-                "Self code test: comment_spell_check.py process returned bad code"
-            )
+            self.fail("Version Test: FAIL")
         if "unknown" in version_string:
-            self.fail("Self code test: version string contains 'unknown'")
+            self.fail("Version Test: version string contains 'unknown'")
