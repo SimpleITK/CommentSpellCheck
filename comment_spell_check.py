@@ -19,7 +19,7 @@ from importlib.metadata import version, PackageNotFoundError
 __version__ = "unknown"
 
 try:
-    __version__ = version("CommentSpellCheck")
+    __version__ = version("comment_spell_check")
 except PackageNotFoundError:
     # package is not installed
     pass
