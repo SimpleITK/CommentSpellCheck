@@ -5,14 +5,14 @@ import subprocess
 class TestCommentSpellCheck(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print("\nSetting up comment_spell_check tests")
+        """Setting up comment_spell_check tests"""
 
     @classmethod
     def tearDownClass(cls):
-        print("\nTearing down comment_spell_check tests")
+        """Tearing down comment_spell_check tests"""
 
     def test_basic(self):
-        print("\nCommand_spell_check: Basic Test")
+        """Basic test"""
         runresult = subprocess.run(
             [
                 "python",
@@ -26,13 +26,12 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
         )
-        if runresult.returncode:
-            self.fail("\nBasic Test: FAIL")
-            output_string = str(runresult.stdout)
-            print("\nTest output:", output_string)
+        self.assertEqual(
+            runresult.returncode, 0, "Basic test FAIL: " + str(runresult.stdout)
+        )
 
     def test_codebase(self):
-        print("\nComment_spell_check: Code Base Test")
+        """Code base test"""
         runresult = subprocess.run(
             [
                 "python",
@@ -48,13 +47,12 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
         )
-        if runresult.returncode:
-            self.fail("\nCode Base Test: FAIL")
-            output_string = str(runresult.stdout)
-            print("\nTest output:", output_string)
+        self.assertEqual(
+            runresult.returncode, 0, "Code test FAIL: " + str(runresult.stdout)
+        )
 
     def test_version(self):
-        print("\nComment_spell_check: Version Test")
+        """Version test"""
         runresult = subprocess.run(
             [
                 "python",
@@ -63,8 +61,9 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
         )
+        self.assertEqual(runresult.returncode, 0, "Version test FAIL")
+
         version_string = str(runresult.stdout)
-        if runresult.returncode:
-            self.fail("Version Test: FAIL")
-        if "unknown" in version_string:
-            self.fail("Version Test: version string contains 'unknown'")
+        self.assertNotEqual(
+            version_string, "unknown", "version string contains 'unknown'"
+        )
