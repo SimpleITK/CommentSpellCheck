@@ -17,7 +17,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             [
                 "python",
                 "comment_spell_check.py",
-                "--verbose",
+                "--miss",
                 "--dict",
                 "tests/dict.txt",
                 "--prefix",
@@ -26,9 +26,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
         )
-        self.assertEqual(
-            runresult.returncode, 0, "Basic test FAIL: " + str(runresult.stdout)
-        )
+        self.assertEqual(runresult.returncode, 0, runresult.stdout)
 
     def test_codebase(self):
         """Code base test"""
@@ -36,7 +34,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             [
                 "python",
                 "comment_spell_check.py",
-                "--verbose",
+                "--miss",
                 "--prefix",
                 "myprefix",
                 "--suffix",
@@ -47,9 +45,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
         )
-        self.assertEqual(
-            runresult.returncode, 0, "Code test FAIL: " + str(runresult.stdout)
-        )
+        self.assertEqual(runresult.returncode, 0, runresult.stdout)
 
     def test_version(self):
         """Version test"""
@@ -61,7 +57,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
         )
-        self.assertEqual(runresult.returncode, 0, "Version test FAIL")
+        self.assertEqual(runresult.returncode, 0)
 
         version_string = str(runresult.stdout)
         self.assertNotEqual(
