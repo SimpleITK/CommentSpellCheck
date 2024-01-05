@@ -365,6 +365,14 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def word_check(word):
+    """ Check if a word is acceptable for the dictionary.  We allow string that
+    is acceptable as a python idenfier, plus also we allow apostrophes."""
+    if word.isidentifier():
+       return True
+    # word without apostrophe
+    word2 = word.replace("'", "")
+    return word2.isidentifier()
 
 def add_dict(enchant_dict, filename, verbose=False):
     """Update ``enchant_dict`` spell checking dictionary with the words listed
@@ -377,6 +385,8 @@ def add_dict(enchant_dict, filename, verbose=False):
 
     # You better not have more than 1 word in a line
     for wrd in lines:
+        if not word_check(wrd):
+            print("Warning: adding word with non-alphanumeric characters to dictionary:", wrd)
         if not enchant_dict.check(wrd):
             enchant_dict.add(wrd)
 
@@ -482,12 +492,13 @@ def main():
     # Done spell checking.  Print out all the words not found in our dictionary.
     #
     if not args.miss:
-        print("\nBad words\n")
+        print("\nBad words")
 
     previous_word = ""
+    print("")
 
     for misspelled_word, found_file, line_num in bad_words:
-        if misspelled_word != previous_word:
+        if misspelled_word != previous_word and args.first:
             print(f"\n{misspelled_word}:")
 
         if (misspelled_word == previous_word) and args.first:
@@ -495,9 +506,9 @@ def main():
             continue
 
         if args.vim:
-            print(f"    vim +{line_num} {found_file}", file=sys.stderr)
+            print(f"vim +{line_num} {found_file}", file=sys.stderr)
         else:
-            print(f"    {found_file}, {line_num}", file=sys.stderr)
+            print(f"file: {found_file:30}  line: {line_num:3d}  word: {misspelled_word}", file=sys.stderr)
 
         previous_word = misspelled_word
 
