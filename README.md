@@ -3,8 +3,9 @@
 ![python testing](https://github.com/SimpleITK/CommentSpellCheck/actions/workflows/python-app.yml/badge.svg)
 
 
-A script that automatically spell checks the comments of a code base.
-It is intended to be run on the SimpleITK and ITK code bases.
+The CommentSpellCheck (CSC) package provides a script that automatically
+spell checks the comments of a code base.  It was originally developed to
+be run on the SimpleITK and ITK code bases.
 
 Here is how it is typically run:
 
@@ -39,3 +40,13 @@ option, the following file types are available: Python (.py), C/C++
 and Java (.java).  Note that reStructuredText files are treated as standard
 text.  Consequentially, all markup keywords that are not actual words will
 need to be added to the additional/exception dictionary.
+
+## Dictionary notes
+
+By default, on Linux and Mac systems, pyenchant uses [GNU aspell](http://aspell.net/)
+as the underlying dictionary.  The spell checking is case sensitive.  While
+aspell allows arbitrary characters in a dictionary word, CSC may split up
+a word by non-alphanumeric characters.  This split can occur if the word
+itself is not found in the dictionary.
+
+If a dictionary word has non-alphanumeric characters, CSC prints a warning.
