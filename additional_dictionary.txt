@@ -842,6 +842,7 @@ asarray
 ascontiguousarray
 asin
 asm
+aspell
 ast
 atan
 atol
