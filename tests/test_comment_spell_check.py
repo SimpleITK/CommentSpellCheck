@@ -81,3 +81,17 @@ class TestCommentSpellCheck(unittest.TestCase):
         self.assertNotEqual(
             version_string, "unknown", "version string contains 'unknown'"
         )
+
+    def test_bibtex(self):
+        """Bibtext test"""
+        runresult = subprocess.run(
+            [
+                "python",
+                "comment_spell_check.py",
+                "--bibtex",
+                "tests/itk.bib",
+                "tests/bibtest.py",
+            ],
+            stdout=subprocess.PIPE,
+        )
+        self.assertEqual(runresult.returncode, 0, runresult.stdout)
