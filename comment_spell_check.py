@@ -25,6 +25,7 @@ import glob
 import argparse
 import re
 from pathlib import Path
+from importlib.metadata import version, PackageNotFoundError
 
 from enchant.checker import SpellChecker
 from enchant.tokenize import EmailFilter, URLFilter
@@ -32,7 +33,7 @@ from enchant import Dict
 
 from comment_parser import comment_parser
 
-from importlib.metadata import version, PackageNotFoundError
+from lib import bibtex_loader
 
 __version__ = "unknown"
 
@@ -378,6 +379,13 @@ def parse_args():
         help="Set file mime type. File name suffix will be ignored.",
     )
 
+    parser.add_argument(
+        "--bibtex",
+        action="append",
+        dest="bibtex",
+        help="Bibtex file to load for additional dictionary words.",
+    )
+
     parser.add_argument("--version", action="version", version=f"{__version__}")
 
     args = parser.parse_args()
@@ -404,10 +412,37 @@ def add_dict(enchant_dict, filename, verbose=False):
             enchant_dict.add(wrd)
 
 
+def create_spell_checker(args, output_lvl):
+    """Create a SpellChecker."""
+
+    my_dict = Dict("en_US")
+
+    # Load the dictionary files
+    #
+    initial_dct = Path(__file__).parent / "additional_dictionary.txt"
+    if not initial_dct.exists():
+        initial_dct = None
+    else:
+        add_dict(my_dict, str(initial_dct), any([args.brief, output_lvl >= 0]))
+
+    if args.dict is not None:
+        for d in args.dict:
+            add_dict(my_dict, d, any([args.brief, output_lvl >= 0]))
+
+    # Load the bibliography files
+    #
+    if args.bibtex is not None:
+        for bib in args.bibtex:
+            bibtex_loader.add_bibtex(my_dict, bib, any([args.brief, output_lvl >= 0]))
+
+    # Create the SpellChecker
+    spell_checker = SpellChecker(my_dict, filters=[EmailFilter, URLFilter])
+
+    return spell_checker
+
+
 def main():
     args = parse_args()
-
-    sitk_dict = Dict("en_US")
 
     # Set the amount of debugging messages to print.
     output_lvl = 1
@@ -419,19 +454,7 @@ def main():
     if args.miss:
         output_lvl = -1
 
-    # Load the dictionary files
-    #
-    initial_dct = Path(__file__).parent / "additional_dictionary.txt"
-    if not initial_dct.exists():
-        initial_dct = None
-    else:
-        add_dict(sitk_dict, str(initial_dct), any([args.brief, output_lvl >= 0]))
-
-    if args.dict is not None:
-        for d in args.dict:
-            add_dict(sitk_dict, d, any([args.brief, output_lvl >= 0]))
-
-    spell_checker = SpellChecker(sitk_dict, filters=[EmailFilter, URLFilter])
+    spell_checker = create_spell_checker(args, output_lvl)
 
     file_list = []
     if len(args.filenames):
