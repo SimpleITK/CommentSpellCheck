@@ -33,8 +33,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Basic test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
+                "comment_spell_check",
                 "--miss",
                 "--dict",
                 "tests/dict.txt",
@@ -50,8 +49,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Code base test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
+                "comment_spell_check",
                 "--miss",
                 "--prefix",
                 "myprefix",
@@ -69,8 +67,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Version test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
+                "comment_spell_check",
                 "--version",
             ],
             stdout=subprocess.PIPE,
@@ -86,8 +83,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Bibtext test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
+                "comment_spell_check",
                 "--bibtex",
                 "tests/itk.bib",
                 "tests/bibtest.py",
