@@ -26,7 +26,7 @@ dynamic = ["dependencies", "version"]
 dependencies = {file = ["requirements.txt"]}
 
 [project.scripts]
-comment_spell_check = "comment_spell_check:main"
+comment_spell_check = "comment_spell_check.comment_spell_check:main"
 
 [tool.setuptools_scm]
 local_scheme = "dirty-tag"
