@@ -28,6 +28,9 @@ dependencies = {file = ["requirements.txt"]}
 [project.scripts]
 comment_spell_check = "comment_spell_check.comment_spell_check:main"
 
+[tool.setuptools.package-data]
+"*" = ["*.txt"]
+
 [tool.setuptools_scm]
 local_scheme = "dirty-tag"
 
