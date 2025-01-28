@@ -33,7 +33,7 @@ from enchant import Dict
 
 from comment_parser import comment_parser
 
-from lib import bibtex_loader
+from comment_spell_check.lib import bibtex_loader
 
 __version__ = "unknown"
 
