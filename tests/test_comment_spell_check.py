@@ -33,14 +33,16 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Basic test"""
         runresult = subprocess.run(
             [
-                "comment_spell_check",
-                "--miss",
+                "python",
+                "comment_spell_check.py",
+                "--verbose",
                 "--dict",
-                "tests/dict.txt",
+                "../tests/dict.txt",
                 "--prefix",
                 "myprefix",
-                "tests/example.h",
+                "../tests/example.h",
             ],
+            cwd="comment_spell_check",
             stdout=subprocess.PIPE,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
@@ -49,8 +51,9 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Code base test"""
         runresult = subprocess.run(
             [
-                "comment_spell_check",
-                "--miss",
+                "python",
+                "comment_spell_check.py",
+                "--verbose",
                 "--prefix",
                 "myprefix",
                 "--suffix",
@@ -59,6 +62,7 @@ class TestCommentSpellCheck(unittest.TestCase):
                 ".md",
                 ".",
             ],
+            cwd="comment_spell_check",
             stdout=subprocess.PIPE,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
@@ -67,9 +71,11 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Version test"""
         runresult = subprocess.run(
             [
-                "comment_spell_check",
+                "python",
+                "comment_spell_check.py",
                 "--version",
             ],
+            cwd="comment_spell_check",
             stdout=subprocess.PIPE,
         )
         self.assertEqual(runresult.returncode, 0)
@@ -83,11 +89,14 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Bibtext test"""
         runresult = subprocess.run(
             [
-                "comment_spell_check",
+                "python",
+                "comment_spell_check.py",
+                "--verbose",
                 "--bibtex",
-                "tests/itk.bib",
-                "tests/bibtest.py",
+                "../tests/itk.bib",
+                "../tests/bibtest.py",
             ],
+            cwd="comment_spell_check",
             stdout=subprocess.PIPE,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
