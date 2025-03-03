@@ -1,3 +1,5 @@
+""" Load Bibtex files into a spell checking dictionary. """
+
 import bibtexparser
 
 

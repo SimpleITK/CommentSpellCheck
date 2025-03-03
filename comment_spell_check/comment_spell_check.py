@@ -18,6 +18,8 @@
 #
 # ==========================================================================*/
 
+""" spell check the comments in code. """
+
 import sys
 import os
 import fnmatch
@@ -33,7 +35,10 @@ from enchant import Dict
 
 from comment_parser import comment_parser
 
-from comment_spell_check.lib import bibtex_loader
+try:
+    from comment_spell_check.lib import bibtex_loader
+except ImportError:
+    from lib import bibtex_loader
 
 __version__ = "unknown"
 
@@ -61,7 +66,7 @@ SUFFIX2MIME = {
 CONTRACTIONS = ["'d", "'s", "'th"]
 
 
-def splitCamelCase(word):
+def split_camel_case(word):
     """Split a camel case string into individual words."""
 
     result = []
@@ -75,16 +80,16 @@ def splitCamelCase(word):
             current_word = ""
         current_word = current_word + x
 
-    if len(current_word):
+    if len(current_word) > 0:
         result.append(current_word)
 
     return result
 
 
-def getMimeType(filepath):
+def get_mime_type(filepath):
     """Map ``filepath`` extension to file type."""
-    name, ext = os.path.splitext(filepath)
-    return SUFFIX2MIME.get(ext, "text/plain")
+    parts = os.path.splitext(filepath)
+    return SUFFIX2MIME.get(parts[1], "text/plain")
 
 
 def load_text_file(filename):
@@ -96,7 +101,7 @@ def load_text_file(filename):
 
     output = []
     lc = 0
-    with open(filename) as fp:
+    with open(filename, encoding="utf-8") as fp:
         for line in fp:
             line = line.strip()
             lc = lc + 1
@@ -116,7 +121,7 @@ def spell_check_words(spell_checker: SpellChecker, words: list[str]):
 def spell_check_comment(
     spell_checker: SpellChecker,
     c: comment_parser.common.Comment,
-    prefixes: list[str] = [],
+    prefixes: list[str] = None,
     output_lvl=2,
 ) -> list[str]:
     """Check comment and return list of identified issues if any."""
@@ -131,7 +136,7 @@ def spell_check_comment(
         error_word = error.word
 
         if output_lvl > 1:
-            print(f"Error: {error_word}")
+            print(f"    Error: {error_word}")
 
         valid = False
 
@@ -142,7 +147,8 @@ def spell_check_comment(
                 error_word = error_word[: -len(contraction)]
                 if output_lvl > 1:
                     print(
-                        f"Stripping contraction: {original_error_word} -> {error_word}"
+                        "    Stripping contraction: "
+                        + f"{original_error_word} -> {error_word}"
                     )
                 if spell_checker.check(error_word):
                     valid = True
@@ -151,50 +157,55 @@ def spell_check_comment(
         if valid:
             continue
 
+        if prefixes is None:
+            prefixes = []
+
         # Check if the bad word starts with a prefix.
         # If so, spell check the word without that prefix.
+
         for pre in prefixes:
             if error_word.startswith(pre):
                 # check if the word is only the prefix
                 if len(pre) == len(error_word):
                     if output_lvl > 1:
-                        print(f"Prefix '{pre}' matches word")
+                        print(f"    Prefix '{pre}' matches word")
                     valid = True
                     break
 
                 # remove the prefix
                 wrd = error_word[len(pre) :]
                 if output_lvl > 1:
-                    print(f"Trying without '{pre}' prefix: {error_word} -> {wrd}")
+                    print(f"    Trying without '{pre}' prefix: {error_word} -> {wrd}")
                 try:
                     if spell_checker.check(wrd):
                         valid = True
-                        break
                     else:
                         # Try splitting camel case words and checking each sub-words
                         if output_lvl > 1:
-                            print("Trying splitting camel case word: {wrd}")
-                        sub_words = splitCamelCase(wrd)
+                            print(f"    Trying splitting camel case word: {wrd}")
+                        sub_words = split_camel_case(wrd)
+                        if output_lvl > 1:
+                            print("    Sub-words: ", sub_words)
                         if len(sub_words) > 1 and spell_check_words(
                             spell_checker, sub_words
                         ):
                             valid = True
                             break
-                except BaseException:
-                    print(f"Caught an exception for word {error_word} {wrd}")
+                except TypeError:
+                    print(f"    Caught an exception for word {error_word} {wrd}")
 
         if valid:
             continue
 
         # Try splitting camel case words and checking each sub-word
         if output_lvl > 1:
-            print(f"Trying splitting camel case word: {error_word}")
-        sub_words = splitCamelCase(error_word)
+            print(f"    Trying splitting camel case word: {error_word}")
+        sub_words = split_camel_case(error_word)
         if len(sub_words) > 1 and spell_check_words(spell_checker, sub_words):
             continue
 
         if output_lvl > 1:
-            msg = f"error: '{error_word}', suggestions: {spell_checker.suggest()}"
+            msg = f"    Error: '{error_word}', suggestions: {spell_checker.suggest()}"
         else:
             msg = error_word
         mistakes.append(msg)
@@ -202,11 +213,13 @@ def spell_check_comment(
     return mistakes
 
 
-def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefixes=[]):
+def spell_check_file(
+    filename, spell_checker, mime_type="", output_lvl=1, prefixes=None
+):
     """Check spelling in ``filename``."""
 
     if len(mime_type) == 0:
-        mime_type = getMimeType(filename)
+        mime_type = get_mime_type(filename)
 
     if output_lvl > 0:
         print(f"spell_check_file: {filename}, {mime_type}")
@@ -217,7 +230,7 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
     else:
         try:
             clist = comment_parser.extract_comments(filename, mime=mime_type)
-        except BaseException:
+        except TypeError:
             print(f"Parser failed, skipping file {filename}")
             return []
 
@@ -227,7 +240,7 @@ def spell_check_file(filename, spell_checker, mime_type="", output_lvl=1, prefix
         mistakes = spell_check_comment(
             spell_checker, c, prefixes=prefixes, output_lvl=output_lvl
         )
-        if len(mistakes):
+        if len(mistakes) > 0:
             if output_lvl > 0:
                 print(f"\nLine number {c.line_number()}")
             if output_lvl > 0:
@@ -253,7 +266,7 @@ def exclude_check(name, exclude_list):
     if exclude_list is None:
         return False
     for pattern in exclude_list:
-        match = re.findall("%s" % pattern, name)
+        match = re.findall(pattern, name)
         if len(match) > 0:
             return True
     return False
@@ -271,6 +284,7 @@ def skip_check(name, skip_list):
 
 
 def parse_args():
+    """parse the command-line arguments."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument("filenames", nargs="*")
@@ -398,7 +412,7 @@ def add_dict(enchant_dict, filename, verbose=False):
     if verbose:
         print(f"Additional dictionary: {filename}")
 
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         lines = f.read().splitlines()
 
     # You better not have more than 1 word in a line
@@ -435,13 +449,14 @@ def create_spell_checker(args, output_lvl):
         for bib in args.bibtex:
             bibtex_loader.add_bibtex(my_dict, bib, any([args.brief, output_lvl >= 0]))
 
-    # Create the SpellChecker
+    # Create the spell checking object
     spell_checker = SpellChecker(my_dict, filters=[EmailFilter, URLFilter])
 
     return spell_checker
 
 
 def main():
+    """comment_spell_check main function."""
     args = parse_args()
 
     # Set the amount of debugging messages to print.
