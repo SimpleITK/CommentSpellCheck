@@ -18,7 +18,7 @@
 #
 # ==========================================================================*/
 
-""" spell check the comments in code. """
+"""spell check the comments in code."""
 
 import sys
 import os
@@ -29,16 +29,18 @@ import re
 from pathlib import Path
 from importlib.metadata import version, PackageNotFoundError
 
-from enchant.checker import SpellChecker
-from enchant.tokenize import EmailFilter, URLFilter
-from enchant import Dict
-
 from comment_parser import comment_parser
 
+from spellchecker import SpellChecker
+
 try:
+    # This loads the modules from the installed package
     from comment_spell_check.lib import bibtex_loader
+    from comment_spell_check.lib import create_checker
 except ImportError:
+    # This loads the modules from the source directory
     from lib import bibtex_loader
+    from lib import create_checker
 
 __version__ = "unknown"
 
@@ -113,13 +115,31 @@ def load_text_file(filename):
 def spell_check_words(spell_checker: SpellChecker, words: list[str]):
     """Check each word and report False if at least one has an spelling error."""
     for word in words:
-        if not spell_checker.check(word):
+        if not (word in spell_checker or word.lower() in spell_checker):
             return False
     return True
 
 
+def find_misspellings(
+    spell: SpellChecker, line: str, verbose: bool = False
+) -> list[str]:
+    """Find misspellings in a line of text."""
+
+    l2 = re.sub(r"[^a-zA-Z]", " ", line)
+    words = l2.split()
+
+    mistakes = []
+
+    for word in words:
+        if not (word.lower() in spell or word in spell):
+            if verbose:
+                print(f"Misspelled word: {word}")
+            mistakes.append(word)
+    return mistakes
+
+
 def spell_check_comment(
-    spell_checker: SpellChecker,
+    spell: SpellChecker,
     c: comment_parser.common.Comment,
     prefixes: list[str] = None,
     output_lvl=2,
@@ -129,12 +149,10 @@ def spell_check_comment(
     if output_lvl > 1:
         print(f"Line {c.line_number()}: {c}")
 
+    bad_words = find_misspellings(spell, c.text(), verbose=output_lvl > 1)
+
     mistakes = []
-    spell_checker.set_text(c.text())
-
-    for error in spell_checker:
-        error_word = error.word
-
+    for error_word in bad_words:
         if output_lvl > 1:
             print(f"    Error: {error_word}")
 
@@ -150,8 +168,7 @@ def spell_check_comment(
                         "    Stripping contraction: "
                         + f"{original_error_word} -> {error_word}"
                     )
-                if spell_checker.check(error_word):
-                    valid = True
+                valid = error_word in spell
                 break
 
         if valid:
@@ -177,18 +194,13 @@ def spell_check_comment(
                 if output_lvl > 1:
                     print(f"    Trying without '{pre}' prefix: {error_word} -> {wrd}")
                 try:
-                    if spell_checker.check(wrd):
-                        valid = True
-                    else:
+                    valid = wrd in spell
+                    if not valid:
                         # Try splitting camel case words and checking each sub-words
                         if output_lvl > 1:
-                            print(f"    Trying splitting camel case word: {wrd}")
+                            print("Trying splitting camel case word: {wrd}")
                         sub_words = split_camel_case(wrd)
-                        if output_lvl > 1:
-                            print("    Sub-words: ", sub_words)
-                        if len(sub_words) > 1 and spell_check_words(
-                            spell_checker, sub_words
-                        ):
+                        if len(sub_words) > 1 and spell_check_words(spell, sub_words):
                             valid = True
                             break
                 except TypeError:
@@ -201,11 +213,14 @@ def spell_check_comment(
         if output_lvl > 1:
             print(f"    Trying splitting camel case word: {error_word}")
         sub_words = split_camel_case(error_word)
-        if len(sub_words) > 1 and spell_check_words(spell_checker, sub_words):
+        if len(sub_words) > 1 and spell_check_words(spell, sub_words):
             continue
 
         if output_lvl > 1:
-            msg = f"    Error: '{error_word}', suggestions: {spell_checker.suggest()}"
+            msg = (
+                f"    error: '{error_word}', "
+                + f"suggestions: {spell.candidates(error_word)}"
+            )
         else:
             msg = error_word
         mistakes.append(msg)
@@ -426,33 +441,33 @@ def add_dict(enchant_dict, filename, verbose=False):
             enchant_dict.add(wrd)
 
 
-def create_spell_checker(args, output_lvl):
-    """Create a SpellChecker."""
-
-    my_dict = Dict("en_US")
-
-    # Load the dictionary files
-    #
+def build_dictionary_list(args):
+    """build a list of dictionaries to use for spell checking."""
+    dict_list = []
     initial_dct = Path(__file__).parent / "additional_dictionary.txt"
-    if not initial_dct.exists():
-        initial_dct = None
+
+    if initial_dct.exists():
+        dict_list.append(initial_dct)
     else:
-        add_dict(my_dict, str(initial_dct), any([args.brief, output_lvl >= 0]))
+        print("Warning: initial dictionary not found.", initial_dct)
 
-    if args.dict is not None:
-        for d in args.dict:
-            add_dict(my_dict, d, any([args.brief, output_lvl >= 0]))
+    if not isinstance(args.dict, list):
+        return dict_list
 
-    # Load the bibliography files
-    #
-    if args.bibtex is not None:
-        for bib in args.bibtex:
-            bibtex_loader.add_bibtex(my_dict, bib, any([args.brief, output_lvl >= 0]))
+    for d in args.dict:
+        dpath = Path(d)
+        if dpath.exists():
+            dict_list.append(dpath)
 
-    # Create the spell checking object
-    spell_checker = SpellChecker(my_dict, filters=[EmailFilter, URLFilter])
+    return dict_list
 
-    return spell_checker
+
+def add_bibtex_words(spell, bibtex_files, verbose=False):
+    """Add words from bibtex files to the spell checker."""
+    for bibtex_file in bibtex_files:
+        if verbose:
+            print(f"Loading bibtex file: {bibtex_file}")
+        bibtex_loader.add_bibtex(spell, bibtex_file, verbose=verbose)
 
 
 def main():
@@ -469,7 +484,12 @@ def main():
     if args.miss:
         output_lvl = -1
 
-    spell_checker = create_spell_checker(args, output_lvl)
+    dict_list = build_dictionary_list(args)
+
+    spell = create_checker.create_checker(dict_list, output_lvl > 1)
+
+    if args.bibtex:
+        add_bibtex_words(spell, args.bibtex, verbose=output_lvl > 1)
 
     file_list = []
     if len(args.filenames):
@@ -515,7 +535,7 @@ def main():
                     print(f"\nChecking {x}")
                 result = spell_check_file(
                     x,
-                    spell_checker,
+                    spell,
                     args.mime_type,
                     output_lvl=output_lvl,
                     prefixes=prefixes,
@@ -532,7 +552,7 @@ def main():
             # f is a file, so spell check it
             result = spell_check_file(
                 f,
-                spell_checker,
+                spell,
                 args.mime_type,
                 output_lvl=output_lvl,
                 prefixes=prefixes,
