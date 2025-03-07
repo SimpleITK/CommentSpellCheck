@@ -33,8 +33,14 @@ from comment_parser import comment_parser
 
 from spellchecker import SpellChecker
 
-from lib import bibtex_loader
-from lib import create_checker
+try:
+    # This loads the modules from the installed package
+    from comment_spell_check.lib import bibtex_loader
+    from comment_spell_check.lib import create_checker
+except ImportError:
+    # This loads the modules from the source directory
+    from lib import bibtex_loader
+    from lib import create_checker
 
 __version__ = "unknown"
 
