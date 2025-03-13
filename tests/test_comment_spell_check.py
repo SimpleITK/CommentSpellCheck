@@ -35,7 +35,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             [
                 "python",
                 "comment_spell_check.py",
-                "--verbose",
+                "--miss",
                 "--dict",
                 "../tests/dict.txt",
                 "--prefix",
@@ -91,7 +91,6 @@ class TestCommentSpellCheck(unittest.TestCase):
             [
                 "python",
                 "comment_spell_check.py",
-                "--verbose",
                 "--bibtex",
                 "../tests/itk.bib",
                 "../tests/bibtest.py",
@@ -100,3 +99,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             stdout=subprocess.PIPE,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()
