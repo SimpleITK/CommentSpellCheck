@@ -29,7 +29,7 @@
 
 int test_int;
 int hello_world() {
-  // Sup, bro?
+  // Sup, dude?
   print("Mmmm, pie.");
 }
 
