@@ -11,12 +11,12 @@ repos:
    -   id: check-added-large-files
        args: ['--maxkb=200']
 - repo: https://github.com/psf/black
-  rev: 23.3.0
+  rev: 25.1.0
   hooks:
    - id: black
      args: ['--check', '--diff']
 - repo: https://github.com/pycqa/flake8
-  rev: 6.0.0
+  rev: 7.0.0
   hooks:
    - id: flake8
      entry: pflake8

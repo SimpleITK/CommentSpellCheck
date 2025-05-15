@@ -242,6 +242,7 @@ Goldfarb
 Goodlet
 Gouaillard
 Gouraud
+Gnuplot
 GradientDescentOptimizerBasev
 GradientRecursiveGaussianImageFiter
 GrayscaleFillhole
@@ -267,6 +268,7 @@ Haynor
 Hee
 Heimburg
 Herk
+Hermitian
 Herve
 Hexahedral
 Hexahedron
@@ -420,6 +422,7 @@ Mamata
 Manduchi
 Margolin
 Mathieu
+Matlab
 Matsumoto
 Mattmann
 Mauna
@@ -556,8 +559,10 @@ RenyiEntropyThreshold
 RenyiEntropyThresholdCalculator
 RenyiEntropyThresholdImageFilter
 RenyiEntropys
+Res
 ResamplerType
 Rescale
+Resize
 Reson
 Ridler
 Riemannian
@@ -638,6 +643,7 @@ Sommerlad
 Spaeth
 Splitter
 Springer
+Stat
 Stejskal
 Stolfi
 Stroustrup
@@ -645,6 +651,7 @@ Structs
 Styner
 Su
 Subpixel
+Subsample
 Subsampling
 Suyash
 SyN
@@ -657,6 +664,7 @@ TRE
 TYPENOTAPPLICABLE
 Takuji
 Tcl
+Tech
 Teo
 Testbed
 Thevenaz
@@ -718,6 +726,7 @@ UnRegisterAllFactories
 UnRegisterFactory
 Unary
 Undefine
+Unix
 Unlinks
 Unregister
 Unser
@@ -753,6 +762,7 @@ Viergever
 Vigneault
 Vincken
 Vis
+VolView
 Vor
 Voronoi
 Wada
@@ -814,6 +824,7 @@ alignas
 alignof
 allclose
 allocator
+alt
 amax
 amin
 amongst
@@ -865,6 +876,7 @@ basefield
 beginpoint
 behaviour
 bellew
+bf
 bigcup
 bigwww
 bilinear
@@ -882,6 +894,7 @@ bowdler
 br
 break
 bspline
+builtin
 burton
 bwh
 byteorder
@@ -894,6 +907,7 @@ casted
 catch
 cbegin
 cbrt
+cc
 ccc
 cccc
 cdot
@@ -912,6 +926,8 @@ chamfer
 char
 char16_t
 char32_t
+checkbox
+chtml
 cin
 cindex
 circ
@@ -942,6 +958,8 @@ compat
 compl
 complex128
 complex64
+composited
+compositing
 computeboundingbox
 concat
 concept
@@ -967,6 +985,7 @@ copyreg
 copysign
 cout
 cov
+covariant
 covariances
 cpp
 cppcheck
@@ -986,6 +1005,7 @@ dataset
 datasets
 datastructure
 datastructures
+datatype
 datatypes
 dave
 ddots
@@ -1001,6 +1021,7 @@ deconvolution
 deconvolved
 decr
 deeppink
+def
 default
 deffield
 defgroup
@@ -1026,6 +1047,7 @@ dev
 devirtualized
 df
 diag
+dict
 diffeomorphic
 diffeomorphism
 differencing
@@ -1035,12 +1057,14 @@ discretization
 discretized
 disp
 displaystyle
+dist
 dll
 dllexport
 dlls
 dm
 do
 documentclass
+doesn
 doi
 double
 downsample
@@ -1090,10 +1114,12 @@ eqnarray
 equidistribution
 erosions
 et
+etc
 euclidian
 euler
 eval
 exe
+exp
 exp2
 expander
 explicit
@@ -1101,6 +1127,7 @@ exponentials
 exponentiate
 export
 expr
+ext
 extendible
 extensibility
 extern
@@ -1118,11 +1145,14 @@ fdata
 fdgradf
 fe
 feret
+ff
 ffdgradf
 fft
 fftw
 fiducials
 fiji
+filename
+filenames
 final
 findall
 finditer
@@ -1147,10 +1177,15 @@ frexp
 friend
 frombuffer
 fs
+ft
+ftp
 func
+functionalities
 functools
+functor
 fv
 fvisibility
+fwd
 gabor
 garbow
 gaussian
@@ -1186,6 +1221,7 @@ hashlib
 hashtable
 hdl
 heaviside
+hexadecimals
 hexahedra
 hexahedron
 hexahedrons
@@ -1325,6 +1361,8 @@ jpg
 jupyter
 kd
 keio
+kitware
+km
 kron
 labelings
 labelled
@@ -1352,6 +1390,7 @@ liness
 linspace
 linux
 ljust
+ll
 llvm
 lmi
 localised
@@ -1361,7 +1400,9 @@ log2
 long
 longdouble
 longlong
+lookup
 lookups
+lossless
 lossy
 lshift
 lt
@@ -1383,6 +1424,7 @@ mbox
 md
 mediumblue
 mediumvioletred
+metadata
 metaprogramming
 metrics
 metricv
@@ -1393,12 +1435,15 @@ minipipeline
 minkoswki
 minmax
 mirr
+mm
 modf
 module
 morphologic
+mp
 mpl
 msvc
 mul
+multi
 multiband
 multilabel
 multimodality
@@ -1416,6 +1461,7 @@ na
 nabla
 namespace
 namespaces
+namic
 nan
 narrowband
 narrowbanding
@@ -1436,6 +1482,7 @@ netlib
 neurodegenerative
 neuroimage
 new
+newline
 nifti
 nih
 nii
@@ -1450,6 +1497,7 @@ nonpositive
 nonrectilinear
 nonuniformity
 normals
+noqa
 not
 not_eq
 np
@@ -1460,6 +1508,7 @@ nullptr
 num
 numarray
 numpy
+obj
 objectness
 oct
 octree
@@ -1476,6 +1525,7 @@ optimizied
 or
 or_eq
 orangered
+org
 organising
 orthogonally
 orthonormal
@@ -1502,6 +1552,8 @@ parallelized
 param
 parameterisation
 parameterization
+parameterize
+parameterized
 params
 parsers
 partitioner
@@ -1568,6 +1620,7 @@ pyplot
 qe
 ql
 qs
+qt
 quadric
 quantile
 quaternion
@@ -1576,12 +1629,14 @@ rbegin
 rdbuf
 rdstate
 reallocations
+rec
 recalibrate
 recoded
 recognised
 recomputation
 recursing
 reentrant
+refactoring
 register
 registrator
 regridding
@@ -1601,6 +1656,7 @@ rescaled
 rescope
 resizable
 resizeable
+resized
 return
 reusability
 rfind
@@ -1666,6 +1722,7 @@ sline
 smap
 smaps
 smartpointer
+snarky
 sobelOperator
 sourcecode
 spacings
@@ -1689,6 +1746,7 @@ startswith
 static
 static_assert
 static_cast
+std
 stdcall
 stderr
 stdin
@@ -1765,6 +1823,7 @@ todo
 toolkits
 tparam
 tql
+tr
 tractography
 transformMov
 transforms
@@ -1779,6 +1838,8 @@ trunc
 try
 tt
 ttest
+tuple
+tuples
 tx
 txt
 ty
@@ -1867,6 +1928,9 @@ wavefronts
 wchar_t
 while
 wilkinson
+workaround
+workarounds
+workflows
 writeme
 wrt
 www

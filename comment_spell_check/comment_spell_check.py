@@ -18,27 +18,26 @@
 #
 # ==========================================================================*/
 
-""" spell check the comments in code. """
+"""spell check the comments in code."""
 
 import sys
 import os
 import fnmatch
 import glob
-import argparse
 import re
+import unicodedata
+import logging
 from pathlib import Path
 from importlib.metadata import version, PackageNotFoundError
 
-from enchant.checker import SpellChecker
-from enchant.tokenize import EmailFilter, URLFilter
-from enchant import Dict
-
 from comment_parser import comment_parser
 
-try:
-    from comment_spell_check.lib import bibtex_loader
-except ImportError:
-    from lib import bibtex_loader
+from spellchecker import SpellChecker
+
+from comment_spell_check.utils import parseargs
+from comment_spell_check.utils import bibtex_loader
+from comment_spell_check.utils import create_checker
+from comment_spell_check.utils import url_remove
 
 __version__ = "unknown"
 
@@ -110,119 +109,147 @@ def load_text_file(filename):
     return output
 
 
+def remove_accents(input_str):
+    """Removes accents from a string using Unicode normalization."""
+    nfkd_form = unicodedata.normalize("NFKD", input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+
+def filter_string(input_str: str):
+    """Filter out unwanted characters from the input string.
+    That includes removing single quote that are not part of a
+    contraction."""
+
+    # map accented characters to their unaccented equivalent
+    line = remove_accents(input_str)
+
+    # Keep letters and single quotes
+    line = re.sub(r"[^a-zA-Z']", " ", line)
+
+    # Split the line into words
+    words = line.split()
+
+    contraction_apostrophe = re.compile(r"\b\w+'\w+\b")
+
+    w2 = []
+
+    # Check each word for contractions and apostrophes
+    for w in words:
+        if "'" in w:
+            matches = contraction_apostrophe.findall(w)
+            if len(matches) > 0:
+                # if there is a contraction, allow it
+                w2.append(w)
+            else:
+                # apostrophe is not in a contraction so remove it
+                new_word = re.sub("'", "", w)
+                if len(new_word) > 0:
+                    w2.append(new_word)
+        else:
+            w2.append(w)
+
+    return w2
+
+
 def spell_check_words(spell_checker: SpellChecker, words: list[str]):
-    """Check each word and report False if at least one has an spelling error."""
+    """Check each word and report False if at least one has an spelling
+    error."""
     for word in words:
-        if not spell_checker.check(word):
+        if not (word in spell_checker or word.lower() in spell_checker):
             return False
     return True
 
 
+def find_misspellings(spell: SpellChecker, line: str) -> list[str]:
+    """Find misspellings in a line of text."""
+
+    logger = logging.getLogger("comment_spell_check")
+    words = filter_string(line)
+
+    mistakes = []
+
+    for word in words:
+        if not (word.lower() in spell or word in spell):
+            logger.info("Misspelled word: %s", word)
+            mistakes.append(word)
+    return mistakes
+
+
+def remove_contractions(word: str):
+    """Remove contractions from the word."""
+
+    logger = logging.getLogger("comment_spell_check")
+    for contraction in CONTRACTIONS:
+        if word.endswith(contraction):
+            logger.info("Contraction: %s -> %s", word, word[: -len(contraction)])
+            return word[: -len(contraction)]
+    return word
+
+
+def remove_prefix(word: str, prefixes: list[str]):
+    """Remove the prefix from the word."""
+    for prefix in prefixes:
+        if word.startswith(prefix):
+            return word[len(prefix) :]
+    return word
+
+
 def spell_check_comment(
-    spell_checker: SpellChecker,
+    spell: SpellChecker,
     c: comment_parser.common.Comment,
     prefixes: list[str] = None,
-    output_lvl=2,
 ) -> list[str]:
     """Check comment and return list of identified issues if any."""
 
-    if output_lvl > 1:
-        print(f"Line {c.line_number()}: {c}")
+    logger = logging.getLogger("comment_spell_check")
+    logger.info("Line #%d: %s", c.line_number(), c.text())
+
+    line = c.text()
+    if "https://" in line or "http://" in line:
+        line = url_remove.remove_urls(line)
+        logger.debug("    Removed URLs: %s", line)
+
+    bad_words = find_misspellings(spell, line)
 
     mistakes = []
-    spell_checker.set_text(c.text())
+    for error_word in bad_words:
+        logger.debug("    Error: %s", error_word)
 
-    for error in spell_checker:
-        error_word = error.word
+        error_word = remove_contractions(error_word)
 
-        if output_lvl > 1:
-            print(f"    Error: {error_word}")
+        prefixes = prefixes or []
+        error_word = remove_prefix(error_word, prefixes)
 
-        valid = False
-
-        # Check for contractions
-        for contraction in CONTRACTIONS:
-            if error_word.endswith(contraction):
-                original_error_word = error_word
-                error_word = error_word[: -len(contraction)]
-                if output_lvl > 1:
-                    print(
-                        "    Stripping contraction: "
-                        + f"{original_error_word} -> {error_word}"
-                    )
-                if spell_checker.check(error_word):
-                    valid = True
-                break
-
-        if valid:
-            continue
-
-        if prefixes is None:
-            prefixes = []
-
-        # Check if the bad word starts with a prefix.
-        # If so, spell check the word without that prefix.
-
-        for pre in prefixes:
-            if error_word.startswith(pre):
-                # check if the word is only the prefix
-                if len(pre) == len(error_word):
-                    if output_lvl > 1:
-                        print(f"    Prefix '{pre}' matches word")
-                    valid = True
-                    break
-
-                # remove the prefix
-                wrd = error_word[len(pre) :]
-                if output_lvl > 1:
-                    print(f"    Trying without '{pre}' prefix: {error_word} -> {wrd}")
-                try:
-                    if spell_checker.check(wrd):
-                        valid = True
-                    else:
-                        # Try splitting camel case words and checking each sub-words
-                        if output_lvl > 1:
-                            print(f"    Trying splitting camel case word: {wrd}")
-                        sub_words = split_camel_case(wrd)
-                        if output_lvl > 1:
-                            print("    Sub-words: ", sub_words)
-                        if len(sub_words) > 1 and spell_check_words(
-                            spell_checker, sub_words
-                        ):
-                            valid = True
-                            break
-                except TypeError:
-                    print(f"    Caught an exception for word {error_word} {wrd}")
-
-        if valid:
+        if len(error_word) == 0 or error_word in spell or error_word.lower() in spell:
             continue
 
         # Try splitting camel case words and checking each sub-word
-        if output_lvl > 1:
-            print(f"    Trying splitting camel case word: {error_word}")
         sub_words = split_camel_case(error_word)
-        if len(sub_words) > 1 and spell_check_words(spell_checker, sub_words):
+        logger.debug("    Trying splitting camel case word: %s", error_word)
+        logger.debug("    Sub-words: %s", sub_words)
+
+        if len(sub_words) > 1 and spell_check_words(spell, sub_words):
             continue
 
-        if output_lvl > 1:
-            msg = f"    Error: '{error_word}', suggestions: {spell_checker.suggest()}"
-        else:
-            msg = error_word
+        msg = f"'{error_word}', " + f"suggestions: {spell.candidates(error_word)}"
         mistakes.append(msg)
 
     return mistakes
 
 
 def spell_check_file(
-    filename, spell_checker, mime_type="", output_lvl=1, prefixes=None
+    filename: str,
+    spell_checker: SpellChecker,
+    mime_type: str = "",
+    prefixes=None,
 ):
     """Check spelling in ``filename``."""
 
     if len(mime_type) == 0:
         mime_type = get_mime_type(filename)
 
-    if output_lvl > 0:
-        print(f"spell_check_file: {filename}, {mime_type}")
+    logger = logging.getLogger("comment_spell_check")
+    logger.info("spell_check_file: %s, %s", filename, mime_type)
 
     # Returns a list of comment_parser.parsers.common.Comments
     if mime_type == "text/plain":
@@ -231,36 +258,32 @@ def spell_check_file(
         try:
             clist = comment_parser.extract_comments(filename, mime=mime_type)
         except TypeError:
-            print(f"Parser failed, skipping file {filename}")
+            logger.error("Parser failed, skipping file %s", filename)
             return []
 
     bad_words = []
+    line_count = 0
 
     for c in clist:
-        mistakes = spell_check_comment(
-            spell_checker, c, prefixes=prefixes, output_lvl=output_lvl
-        )
+        mistakes = spell_check_comment(spell_checker, c, prefixes=prefixes)
         if len(mistakes) > 0:
-            if output_lvl > 0:
-                print(f"\nLine number {c.line_number()}")
-            if output_lvl > 0:
-                print(c.text())
+            logger.info("\nLine number %s", c.line_number())
+            logger.info(c.text())
             for m in mistakes:
-                if output_lvl >= 0:
-                    print(f"    {m}")
+                logger.info("    %s", m)
                 bad_words.append([m, filename, c.line_number()])
+        line_count = line_count + 1
 
     bad_words = sorted(bad_words)
 
-    if output_lvl > 1:
-        print("\nResults")
-        for x in bad_words:
-            print(x)
+    logger.info("Results")
+    for x in bad_words:
+        logger.info(x)
 
-    return bad_words
+    return bad_words, line_count
 
 
-def exclude_check(name, exclude_list):
+def exclude_check(name: str, exclude_list: list[str] = None):
     """Return True if ``name`` matches any of the regular expressions listed in
     ``exclude_list``."""
     if exclude_list is None:
@@ -272,7 +295,7 @@ def exclude_check(name, exclude_list):
     return False
 
 
-def skip_check(name, skip_list):
+def skip_check(name: str, skip_list: list[str] = None):
     """Return True if ``name`` matches any of the glob pattern listed in
     ``skip_list``."""
     if skip_list is None:
@@ -283,270 +306,47 @@ def skip_check(name, skip_list):
     return False
 
 
-def parse_args():
-    """parse the command-line arguments."""
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("filenames", nargs="*")
-
-    parser.add_argument(
-        "--brief",
-        "-b",
-        action="store_true",
-        default=False,
-        dest="brief",
-        help="Make output brief",
-    )
-
-    parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        default=False,
-        dest="verbose",
-        help="Make output verbose",
-    )
-
-    parser.add_argument(
-        "--first",
-        "-f",
-        action="store_true",
-        default=False,
-        dest="first",
-        help="Show only first occurrence of a mispelling",
-    )
-
-    parser.add_argument(
-        "--vim",
-        "-V",
-        action="store_true",
-        default=False,
-        dest="vim",
-        help="Output results in vim command format",
-    )
-
-    parser.add_argument(
-        "--dict",
-        "-d",
-        "--ignore-words",
-        "-I",
-        action="append",
-        dest="dict",
-        help="File that contains words that will be ignored."
-        " Argument can be passed multiple times."
-        " File must contain 1 word per line.",
-    )
-
-    parser.add_argument(
-        "--exclude",
-        "-e",
-        action="append",
-        dest="exclude",
-        help="Specify regex for excluding files."
-        " Argument can be passed multiple times.",
-    )
-
-    parser.add_argument(
-        "--skip",
-        "-S",
-        action="append",
-        help="Comma-separated list of files to skip. It "
-        "accepts globs as well. E.g.: if you want "
-        "coment_spell_check.py to skip .eps and .txt files, "
-        'you\'d give "*.eps,*.txt" to this option.'
-        " Argument can be passed multiple times.",
-    )
-
-    parser.add_argument(
-        "--prefix",
-        "-p",
-        action="append",
-        default=[],
-        dest="prefixes",
-        help="Add word prefix. Argument can be passed multiple times.",
-    )
-
-    parser.add_argument(
-        "--miss",
-        "-m",
-        action="store_true",
-        default=False,
-        dest="miss",
-        help="Only output the misspelt words",
-    )
-
-    parser.add_argument(
-        "--suffix",
-        "-s",
-        action="append",
-        default=[".h"],
-        dest="suffix",
-        help="File name suffix. Argument can be passed multiple times.",
-    )
-
-    parser.add_argument(
-        "--type",
-        "-t",
-        action="store",
-        default="",
-        dest="mime_type",
-        help="Set file mime type. File name suffix will be ignored.",
-    )
-
-    parser.add_argument(
-        "--bibtex",
-        action="append",
-        dest="bibtex",
-        help="Bibtex file to load for additional dictionary words.",
-    )
-
-    parser.add_argument("--version", action="version", version=f"{__version__}")
-
-    args = parser.parse_args()
-    return args
-
-
-def add_dict(enchant_dict, filename, verbose=False):
-    """Update ``enchant_dict`` spell checking dictionary with the words listed
-    in ``filename`` (one word per line)."""
-    if verbose:
-        print(f"Additional dictionary: {filename}")
-
-    with open(filename, encoding="utf-8") as f:
-        lines = f.read().splitlines()
-
-    # You better not have more than 1 word in a line
-    for wrd in lines:
-        if not wrd.replace("'", "").isidentifier():
-            print(
-                "Warning: adding word with non-alphanumeric characters to dictionary:",
-                wrd,
-            )
-        if not enchant_dict.check(wrd):
-            enchant_dict.add(wrd)
-
-
-def create_spell_checker(args, output_lvl):
-    """Create a SpellChecker."""
-
-    my_dict = Dict("en_US")
-
-    # Load the dictionary files
-    #
+def build_dictionary_list(args):
+    """build a list of dictionaries to use for spell checking."""
+    dict_list = []
     initial_dct = Path(__file__).parent / "additional_dictionary.txt"
-    if not initial_dct.exists():
-        initial_dct = None
+
+    logger = logging.getLogger("comment_spell_check")
+    if initial_dct.exists():
+        dict_list.append(initial_dct)
     else:
-        add_dict(my_dict, str(initial_dct), any([args.brief, output_lvl >= 0]))
+        logger.warning("Initial dictionary not found: %s", initial_dct)
 
-    if args.dict is not None:
-        for d in args.dict:
-            add_dict(my_dict, d, any([args.brief, output_lvl >= 0]))
+    if not isinstance(args.dict, list):
+        return dict_list
 
-    # Load the bibliography files
-    #
-    if args.bibtex is not None:
-        for bib in args.bibtex:
-            bibtex_loader.add_bibtex(my_dict, bib, any([args.brief, output_lvl >= 0]))
+    for d in args.dict:
+        dpath = Path(d)
+        if dpath.exists():
+            dict_list.append(dpath)
 
-    # Create the spell checking object
-    spell_checker = SpellChecker(my_dict, filters=[EmailFilter, URLFilter])
-
-    return spell_checker
+    return dict_list
 
 
-def main():
-    """comment_spell_check main function."""
-    args = parse_args()
+def add_bibtex_words(spell: SpellChecker, bibtex_files: list[str]):
+    """Add words from bibtex files to the spell checker."""
 
-    # Set the amount of debugging messages to print.
-    output_lvl = 1
-    if args.brief:
-        output_lvl = 0
-    else:
-        if args.verbose:
-            output_lvl = 2
-    if args.miss:
-        output_lvl = -1
+    if list is None:
+        return
 
-    spell_checker = create_spell_checker(args, output_lvl)
+    logger = logging.getLogger("comment_spell_check")
 
-    file_list = []
-    if len(args.filenames):
-        file_list = args.filenames
-    else:
-        file_list = ["."]
+    for bibtex_file in bibtex_files:
+        logger.info("Loading bibtex file: %s", bibtex_file)
+        bibtex_loader.add_bibtex(spell, bibtex_file)
 
-    prefixes = ["sitk", "itk", "vtk"] + args.prefixes
 
-    bad_words = []
+def output_results(args, bad_words):
+    """Output the results of the spell check."""
 
-    suffixes = [*set(args.suffix)]  # remove duplicates
-
-    if any([args.brief, output_lvl >= 0]):
-        print(f"Prefixes: {prefixes}")
-        print(f"Suffixes: {suffixes}")
-
-    #
-    # Spell check the files
-    #
-    for f in file_list:
-        if not args.miss:
-            print(f"\nChecking {f}")
-
-        # If f is a directory, recursively check for files in it.
-        if os.path.isdir(f):
-            # f is a directory, so search for files inside
-            dir_entries = []
-            for s in suffixes:
-                dir_entries = dir_entries + glob.glob(f + "/**/*" + s, recursive=True)
-
-            if output_lvl > 0:
-                print(dir_entries)
-
-            # spell check the files found in f
-            for x in dir_entries:
-                if exclude_check(x, args.exclude) or skip_check(x, args.skip):
-                    if not args.miss:
-                        print(f"\nExcluding {x}")
-                    continue
-
-                if not args.miss:
-                    print(f"\nChecking {x}")
-                result = spell_check_file(
-                    x,
-                    spell_checker,
-                    args.mime_type,
-                    output_lvl=output_lvl,
-                    prefixes=prefixes,
-                )
-                bad_words = sorted(bad_words + result)
-
-        else:
-            # f is a file
-            if exclude_check(f, args.exclude) or skip_check(f, args.skip):
-                if not args.miss:
-                    print(f"\nExcluding {x}")
-                continue
-
-            # f is a file, so spell check it
-            result = spell_check_file(
-                f,
-                spell_checker,
-                args.mime_type,
-                output_lvl=output_lvl,
-                prefixes=prefixes,
-            )
-
-            bad_words = sorted(bad_words + result)
-
-    # Done spell checking.  Print out all the words not found in our dictionary.
-    #
-    if not args.miss:
-        print("\nBad words")
+    print("\nBad words\n" if not args.miss else "", end="")
 
     previous_word = ""
-    print("")
 
     for misspelled_word, found_file, line_num in bad_words:
         if misspelled_word != previous_word and args.first:
@@ -566,10 +366,130 @@ def main():
 
         previous_word = misspelled_word
 
-    print("")
-    print(f"{len(bad_words)} misspellings found")
+    print(f"\n{len(bad_words)} misspellings found")
+
+
+def setup_logger(args):
+    """Sets up a logger that outputs to the console."""
+
+    level = logging.INFO
+    if args.verbose:
+        level = logging.DEBUG
+        print("Verbose mode enabled")
+    if args.miss:
+        level = logging.ERROR
+    if args.brief:
+        level = logging.WARNING
+
+    logger = logging.getLogger("comment_spell_check")
+    logger.setLevel(level)
+
+    if level in (logging.INFO, logging.DEBUG):
+        # info and debug messages will be printed to the console
+
+        # Create a console handler
+        ch = logging.StreamHandler()
+        ch.setLevel(level)
+
+        # Create a formatter
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+
+        # Add formatter to ch
+        ch.setFormatter(formatter)
+
+        # Add ch to logger
+        logger.addHandler(ch)
+
+    return logger
+
+
+def comment_spell_check(args):
+    """comment_spell_check main function."""
+    logger = setup_logger(args)
+
+    dict_list = build_dictionary_list(args)
+
+    spell = create_checker.create_checker(dict_list)
+
+    if args.bibtex:
+        add_bibtex_words(spell, args.bibtex)
+
+    file_list = []
+    if len(args.filenames):
+        file_list = args.filenames
+    else:
+        file_list = ["."]
+
+    prefixes = ["sitk", "itk", "vtk"] + args.prefixes
+
+    bad_words = []
+
+    suffixes = [*set(args.suffix)]  # remove duplicates
+
+    logger.info("Prefixes: %s\nSuffixes: %s", prefixes, suffixes)
+
+    counts = [0, 0]
+
+    #
+    # Spell check the files
+    #
+    for f in file_list:
+
+        # If f is a directory, recursively check for files in it.
+        if os.path.isdir(f):
+            # f is a directory, so search for files inside
+            dir_entries = []
+            for s in suffixes:
+                dir_entries = dir_entries + glob.glob(f + "/**/*" + s, recursive=True)
+
+            logger.info(dir_entries)
+
+            # spell check the files found in f
+            for x in dir_entries:
+                if exclude_check(x, args.exclude) or skip_check(x, args.skip):
+                    logger.info("Excluding %s", x)
+                    continue
+
+                logger.info("Checking %s", x)
+                result, lc = spell_check_file(
+                    x,
+                    spell,
+                    args.mime_type,
+                    prefixes=prefixes,
+                )
+                bad_words = sorted(bad_words + result)
+                counts[0] = counts[0] + 1
+                counts[1] = counts[1] + lc
+
+        else:
+            # f is a file
+            if exclude_check(f, args.exclude) or skip_check(f, args.skip):
+                logger.info("Excluding %s", f)
+                continue
+
+            # f is a file, so spell check it
+            result, lc = spell_check_file(
+                f,
+                spell,
+                args.mime_type,
+                prefixes=prefixes,
+            )
+            bad_words = sorted(bad_words + result)
+            counts[0] = counts[0] + 1
+            counts[1] = counts[1] + lc
+
+    output_results(args, bad_words)
+
+    logger.info("%s files checked, %s lines checked", counts[0], counts[1])
 
     sys.exit(len(bad_words))
+
+
+def main():
+    args = parseargs.parse_args()
+    comment_spell_check(args)
 
 
 if __name__ == "__main__":

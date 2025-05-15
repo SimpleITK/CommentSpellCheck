@@ -33,9 +33,8 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Basic test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
-                "--verbose",
+                "comment_spell_check",
+                "--miss",
                 "--dict",
                 "../tests/dict.txt",
                 "--prefix",
@@ -51,8 +50,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Code base test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
+                "comment_spell_check",
                 "--verbose",
                 "--prefix",
                 "myprefix",
@@ -71,8 +69,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Version test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
+                "comment_spell_check",
                 "--version",
             ],
             cwd="comment_spell_check",
@@ -89,9 +86,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """Bibtext test"""
         runresult = subprocess.run(
             [
-                "python",
-                "comment_spell_check.py",
-                "--verbose",
+                "comment_spell_check",
                 "--bibtex",
                 "../tests/itk.bib",
                 "../tests/bibtest.py",
@@ -100,3 +95,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             stdout=subprocess.PIPE,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()

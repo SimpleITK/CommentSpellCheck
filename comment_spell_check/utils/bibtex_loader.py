@@ -1,9 +1,11 @@
-""" Load Bibtex files into a spell checking dictionary. """
+"""Load Bibtex files into a spell checking dictionary."""
 
+import logging
 import bibtexparser
+import spellchecker
 
 
-def split_bibtex_name(name):
+def split_bibtex_name(name: str):
     """
     Split a Bibtex name, which is two words seperated by a number.
     """
@@ -17,19 +19,21 @@ def split_bibtex_name(name):
     return words
 
 
-def add_bibtex(enchant_dict, filename, verbose=False):
-    """Update ``enchant_dict`` spell checking dictionary with names
+def add_bibtex(spell: spellchecker.SpellChecker, filename: str):
+    """Update ``spell`` spell checking dictionary with names
     from ``filename``, a Bibtex file."""
 
-    if verbose:
-        print(f"Bibtex file: {filename}")
+    logger = logging.getLogger("comment_spell_check.bibtex_loader")
+    logger.info("Bibtex file: %s", filename)
+
+    word_list = []
 
     with open(filename, "rt", encoding="utf-8") as biblatex_file:
         bib_database = bibtexparser.load(biblatex_file)
 
         for k in bib_database.get_entry_dict().keys():
             words = split_bibtex_name(k)
-            for w in words:
-                enchant_dict.add(w)
-                if verbose:
-                    print("Added Bibtex word:", w)
+            word_list.extend(words)
+
+        logger.info("Words: %s", word_list)
+        spell.word_frequency.load_words(word_list)
