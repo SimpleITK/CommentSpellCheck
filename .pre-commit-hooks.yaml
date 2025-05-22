@@ -1,0 +1,8 @@
+# This is a configuration file for a pre-commit hook
+- id: comment-spell-check
+  name: Comment Spell Check
+  description: "Automatically spell checks comments of a codebase."
+  entry: comment_spell_check
+  language: python
+  minimum_pre_commit_version: 2.9.2
+  types_or: [python, rst, markdown, ruby, java ]
