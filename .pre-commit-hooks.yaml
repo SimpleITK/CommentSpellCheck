@@ -5,4 +5,4 @@
   entry: comment_spell_check
   language: python
   minimum_pre_commit_version: 2.9.2
-  types_or: [python, rst, markdown, ruby, java, c++, c, csharp ]
+  types_or: [python, rst, markdown, ruby, java, c++, c, c# ]
