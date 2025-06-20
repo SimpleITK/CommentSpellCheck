@@ -55,6 +55,7 @@ SUFFIX2MIME = {
     ".hxx": "text/x-c++",
     ".cs": "text/x-c++",
     ".py": "text/x-python",
+    ".R": "text/x-python",
     ".rb": "text/x-ruby",
     ".java": "text/x-java-source",
     ".txt": "text/plain",
