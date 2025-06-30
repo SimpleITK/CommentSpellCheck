@@ -322,10 +322,7 @@ def build_dictionary_list(args):
     if not isinstance(args.dict, list):
         return dict_list
 
-    for d in args.dict:
-        dpath = Path(d)
-        if dpath.exists():
-            dict_list.append(dpath)
+    dict_list.extend(args.dict)
 
     return dict_list
 

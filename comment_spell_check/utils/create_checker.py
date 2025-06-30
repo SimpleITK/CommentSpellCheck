@@ -5,6 +5,8 @@ additional dictionaries if provided.
 import logging
 import importlib.resources
 import spellchecker
+import requests
+import pathlib
 
 
 def create_checker(dict_list: list[str] = None) -> spellchecker.SpellChecker:
@@ -22,6 +24,7 @@ def create_checker(dict_list: list[str] = None) -> spellchecker.SpellChecker:
     english_dict = str(lib_path) + "/resources/en.json.gz"
     logger.info("Loading English dictionary from: %s", english_dict)
     checker.word_frequency.load_dictionary(english_dict)
+    logger.info("number of words: %s", checker.word_frequency.unique_words)
 
     # load the additional dictionaries
     if not isinstance(dict_list, list):
@@ -29,6 +32,18 @@ def create_checker(dict_list: list[str] = None) -> spellchecker.SpellChecker:
     if len(dict_list) > 0:
         for d in dict_list:
             logger.info("Loading additional dictionary from: %s", d)
-            checker.word_frequency.load_text_file(d)
+            if isinstance(d, pathlib.PosixPath):
+                # assume it's a local file path
+                checker.word_frequency.load_text_file(d)
+            else:
+                # load dictionary from URL
+                if d.startswith("http://") or d.startswith("https://"):
+                    response = requests.get(d)
+                    response.raise_for_status()
+                    checker.word_frequency.load_text(response.text)
+                else:
+                    # assume it's a local file path
+                    checker.word_frequency.load_text_file(d)
+            logger.info("# of words: %s", checker.word_frequency.unique_words)
 
     return checker
