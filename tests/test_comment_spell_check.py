@@ -96,6 +96,24 @@ class TestCommentSpellCheck(unittest.TestCase):
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
 
+    def test_url(self):
+        """URL test"""
+        url = (
+            "https://raw.githubusercontent.com/SimpleITK/SimpleITK/"
+            "refs/heads/master/.github/workflows/additional_dictionary.txt"
+        )
+        runresult = subprocess.run(
+            [
+                "comment_spell_check",
+                "--dict",
+                url,
+                "../tests/urltest.py",
+            ],
+            cwd="comment_spell_check",
+            stdout=subprocess.PIPE,
+        )
+        self.assertEqual(runresult.returncode, 0, runresult.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
