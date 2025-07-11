@@ -1,3 +1,5 @@
+"""command line argument parser for comment_spell_check."""
+
 import argparse
 from importlib.metadata import version, PackageNotFoundError
 
@@ -11,6 +13,7 @@ except PackageNotFoundError:
 
 
 def create_parser():
+    """Create an argument parser for the command-line interface."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument("filenames", nargs="*")
@@ -60,7 +63,8 @@ def create_parser():
         dest="dict",
         help="File that contains words that will be ignored."
         " Argument can be passed multiple times."
-        " File must contain 1 word per line.",
+        " File must contain 1 word per line."
+        " Argument can also be a URL to a text file with words.",
     )
 
     parser.add_argument(

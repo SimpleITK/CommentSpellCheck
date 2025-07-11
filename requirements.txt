@@ -1,3 +1,4 @@
 comment_parser
 pyspellchecker
 bibtexparser
+requests

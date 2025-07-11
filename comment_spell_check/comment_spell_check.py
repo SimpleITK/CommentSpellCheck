@@ -222,7 +222,9 @@ def spell_check_comment(
         prefixes = prefixes or []
         error_word = remove_prefix(error_word, prefixes)
 
-        if len(error_word) == 0 or error_word in spell or error_word.lower() in spell:
+        if not error_word:
+            continue
+        if error_word in spell or error_word.lower() in spell:
             continue
 
         # Try splitting camel case words and checking each sub-word
@@ -322,10 +324,7 @@ def build_dictionary_list(args):
     if not isinstance(args.dict, list):
         return dict_list
 
-    for d in args.dict:
-        dpath = Path(d)
-        if dpath.exists():
-            dict_list.append(dpath)
+    dict_list.extend(args.dict)
 
     return dict_list
 
@@ -362,7 +361,8 @@ def output_results(args, bad_words):
             print(f"vim +{line_num} {found_file}", file=sys.stderr)
         else:
             print(
-                f"file: {found_file:30}  line: {line_num:3d}  word: {misspelled_word}",
+                f"file: {found_file:30}  line: {line_num:3d}  ",
+                f"word: {misspelled_word}",
                 file=sys.stderr,
             )
 
@@ -490,6 +490,7 @@ def comment_spell_check(args):
 
 
 def main():
+    """Parse the command line arguments and call the spell checking function."""
     args = parseargs.parse_args()
     comment_spell_check(args)
 
