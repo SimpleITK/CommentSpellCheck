@@ -1,3 +1,5 @@
+"""Test suite for the comment_spell_check command line tool."""
+
 # ==========================================================================
 #
 #   Copyright NumFOCUS
@@ -21,9 +23,12 @@ import subprocess
 
 
 class TestCommentSpellCheck(unittest.TestCase):
+    """Test class for comment_spell_check command line tool."""
+
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setting up comment_spell_check tests"""
+        return cls()
 
     @classmethod
     def tearDownClass(cls):
@@ -43,6 +48,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             cwd="comment_spell_check",
             stdout=subprocess.PIPE,
+            check=False,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
 
@@ -62,6 +68,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             cwd="comment_spell_check",
             stdout=subprocess.PIPE,
+            check=False,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
 
@@ -74,6 +81,7 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             cwd="comment_spell_check",
             stdout=subprocess.PIPE,
+            check=False,
         )
         self.assertEqual(runresult.returncode, 0)
 
@@ -93,6 +101,26 @@ class TestCommentSpellCheck(unittest.TestCase):
             ],
             cwd="comment_spell_check",
             stdout=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(runresult.returncode, 0, runresult.stdout)
+
+    def test_url(self):
+        """URL test"""
+        url = (
+            "https://raw.githubusercontent.com/SimpleITK/SimpleITK/"
+            "refs/heads/master/.github/workflows/additional_dictionary.txt"
+        )
+        runresult = subprocess.run(
+            [
+                "comment_spell_check",
+                "--dict",
+                url,
+                "../tests/urltest.py",
+            ],
+            cwd="comment_spell_check",
+            stdout=subprocess.PIPE,
+            check=False,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
 
