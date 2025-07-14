@@ -36,17 +36,16 @@ If a word is not found in the dictionaries, we try two additional checks.
 
 The script can also process other file types.  With the **'--suffix'**
 option, the following file types are available: Python (.py), C/C++
-(.c/.cxx), Text (.txt), reStructuredText(.rst), Markdown (.md), Ruby (.ruby),
-and Java (.java).  Note that reStructuredText files are treated as standard
-text.  Consequentially, all markup keywords that are not actual words will
-need to be added to the additional/exception dictionary.
+(.c/.cxx), CSharp (.cs), Text (.txt), reStructuredText(.rst), Markdown (.md),
+Ruby (.ruby), R (.R), and Java (.java).  Note that reStructuredText files are
+treated as standard text.  Consequentially, all markup keywords that are not
+actual words will need to be added to the additional/exception dictionary.
 
 ## Dictionary notes
 
-By default, on Linux and Mac systems, pyenchant uses [GNU aspell](http://aspell.net/)
-as the underlying dictionary.  The spell checking is case sensitive.  While
-aspell allows arbitrary characters in a dictionary word, CSC may split up
-a word by non-alphanumeric characters.  This split can occur if the word
-itself is not found in the dictionary.
-
-If a dictionary word has non-alphanumeric characters, CSC prints a warning.
+We use [PySpellChecker](https://github.com/barrust/pyspellchecker) as the
+underlying spellchecker and its associated default dictionary. Previously we
+used the pyenchant package and its default dictionary. The pyenchant package
+requires an underlying C library, which is not available on all platforms.
+PySpellChecker is a pure Python package and works on all platforms with no
+additional dependencies.
