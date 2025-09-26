@@ -268,7 +268,21 @@ def spell_check_file(
     bad_words = []
     line_count = 0
 
+    disable_spell_check = False
+
     for c in clist:
+        if "spell-check-disable" in c.text().lower():
+            disable_spell_check = True
+            logger.info("    Spell checking disabled")
+            continue
+
+        if "spell-check-enable" in c.text().lower():
+            disable_spell_check = False
+            logger.info("    Spell checking enabled")
+
+        if disable_spell_check:
+            continue
+
         mistakes = spell_check_comment(spell_checker, c, prefixes=prefixes)
         if len(mistakes) > 0:
             logger.info("\nLine number %s", c.line_number())
