@@ -25,6 +25,10 @@
 // With node id's.
 // With the itemIndex'th where itemIndex is a variable name.
 
+// spell-check-disable
+// Some comment with a misspelled word: definately
+// spell-check-enable
+
 #include <stdio.h>
 
 int test_int;
