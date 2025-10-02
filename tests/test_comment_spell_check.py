@@ -109,7 +109,7 @@ class TestCommentSpellCheck(unittest.TestCase):
         """URL test"""
         url = (
             "https://raw.githubusercontent.com/SimpleITK/SimpleITK/"
-            "refs/heads/master/.github/workflows/additional_dictionary.txt"
+            "refs/heads/main/.github/workflows/additional_dictionary.txt"
         )
         runresult = subprocess.run(
             [
