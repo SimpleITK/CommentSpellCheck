@@ -44,7 +44,6 @@ actual words will need to be added to the additional/exception dictionary.
 ## Disabling Spell Checking
 
 Spell checking can be disabled for sections of code by using special
-
 comments.  The following comments will disable spell checking until
 the corresponding end comment is found.
 ```
