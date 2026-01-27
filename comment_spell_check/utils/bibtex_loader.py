@@ -5,7 +5,7 @@ import bibtexparser
 import spellchecker
 
 
-def split_bibtex_name(name: str):
+def split_bibtex_name(name: str) -> list[str]:
     """
     Split a Bibtex name, which is two words seperated by a number.
     """

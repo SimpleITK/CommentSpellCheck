@@ -18,7 +18,36 @@
 #
 # ==========================================================================*/
 
-"""spell check the comments in code."""
+"""Spell check comments in source code files.
+
+This module provides functionality to extract and spell check comments from various
+programming languages including C++, Python, Java, Ruby, and plain text files.
+
+Key Features:
+    - Multi-language support via MIME type detection
+    - CamelCase word splitting for better spell checking
+    - URL detection and removal from comments
+    - Prefix handling for common library conventions (ITK, VTK, SITK)
+    - Custom dictionary support
+    - BibTeX citation integration
+    - Inline spell-check enable/disable directives
+    - Configurable exclude patterns and file skipping
+
+The spell checker can process individual files or recursively scan directories,
+reporting misspellings with their file locations, line numbers, and suggestions.
+
+Example:
+    Basic usage from command line:
+        $ comment-spell-check --suffix .py --suffix .cpp src/
+
+    With custom dictionary:
+        $ comment-spell-check --dict my_words.txt src/module.py
+
+See Also:
+    - parseargs module for command-line argument parsing
+    - bibtex_loader for BibTeX integration
+    - create_checker for dictionary management
+"""
 
 import sys
 import os
@@ -29,6 +58,8 @@ import unicodedata
 import logging
 from pathlib import Path
 from importlib.metadata import version, PackageNotFoundError
+from argparse import Namespace
+from typing import Optional
 
 from comment_parser import comment_parser
 
@@ -67,7 +98,7 @@ SUFFIX2MIME = {
 CONTRACTIONS = ["'d", "'s", "'th"]
 
 
-def split_camel_case(word):
+def split_camel_case(word: str) -> list[str]:
     """Split a camel case string into individual words."""
 
     result = []
@@ -87,13 +118,13 @@ def split_camel_case(word):
     return result
 
 
-def get_mime_type(filepath):
+def get_mime_type(filepath: str) -> str:
     """Map ``filepath`` extension to file type."""
     parts = os.path.splitext(filepath)
     return SUFFIX2MIME.get(parts[1], "text/plain")
 
 
-def load_text_file(filename):
+def load_text_file(filename: str) -> list[comment_parser.common.Comment]:
     """Parse plain text file as list of ``comment_parser.common.Comment``.
 
     For a regular text file, we don't need to parse it for comments. We
@@ -111,13 +142,13 @@ def load_text_file(filename):
     return output
 
 
-def remove_accents(input_str):
+def remove_accents(input_str: str) -> str:
     """Removes accents from a string using Unicode normalization."""
     nfkd_form = unicodedata.normalize("NFKD", input_str)
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 
-def filter_string(input_str: str):
+def filter_string(input_str: str) -> list[str]:
     """Filter out unwanted characters from the input string.
     That includes removing single quote that are not part of a
     contraction."""
@@ -153,7 +184,7 @@ def filter_string(input_str: str):
     return w2
 
 
-def spell_check_words(spell_checker: SpellChecker, words: list[str]):
+def spell_check_words(spell_checker: SpellChecker, words: list[str]) -> bool:
     """Check each word and report False if at least one has an spelling
     error."""
     for word in words:
@@ -177,7 +208,7 @@ def find_misspellings(spell: SpellChecker, line: str) -> list[str]:
     return mistakes
 
 
-def remove_contractions(word: str):
+def remove_contractions(word: str) -> str:
     """Remove contractions from the word."""
 
     logger = logging.getLogger("comment_spell_check")
@@ -188,7 +219,7 @@ def remove_contractions(word: str):
     return word
 
 
-def remove_prefix(word: str, prefixes: list[str]):
+def remove_prefix(word: str, prefixes: list[str]) -> str:
     """Remove the prefix from the word."""
     for prefix in prefixes:
         if word.startswith(prefix):
@@ -199,7 +230,7 @@ def remove_prefix(word: str, prefixes: list[str]):
 def spell_check_comment(
     spell: SpellChecker,
     c: comment_parser.common.Comment,
-    prefixes: list[str] = None,
+    prefixes: Optional[list[str]] = None,
 ) -> list[str]:
     """Check comment and return list of identified issues if any."""
 
@@ -245,8 +276,8 @@ def spell_check_file(
     filename: str,
     spell_checker: SpellChecker,
     mime_type: str = "",
-    prefixes=None,
-):
+    prefixes: Optional[list[str]] = None,
+) -> tuple[list[list], int]:
     """Check spelling in ``filename``."""
 
     if len(mime_type) == 0:
@@ -301,7 +332,7 @@ def spell_check_file(
     return bad_words, line_count
 
 
-def exclude_check(name: str, exclude_list: list[str] = None):
+def exclude_check(name: str, exclude_list: Optional[list[str]] = None) -> bool:
     """Return True if ``name`` matches any of the regular expressions listed in
     ``exclude_list``."""
     if exclude_list is None:
@@ -313,7 +344,7 @@ def exclude_check(name: str, exclude_list: list[str] = None):
     return False
 
 
-def skip_check(name: str, skip_list: list[str] = None):
+def skip_check(name: str, skip_list: Optional[list[str]] = None) -> bool:
     """Return True if ``name`` matches any of the glob pattern listed in
     ``skip_list``."""
     if skip_list is None:
@@ -324,7 +355,7 @@ def skip_check(name: str, skip_list: list[str] = None):
     return False
 
 
-def build_dictionary_list(args):
+def build_dictionary_list(args: Namespace) -> list[Path]:
     """build a list of dictionaries to use for spell checking."""
     dict_list = []
     initial_dct = Path(__file__).parent / "additional_dictionary.txt"
@@ -343,7 +374,7 @@ def build_dictionary_list(args):
     return dict_list
 
 
-def add_bibtex_words(spell: SpellChecker, bibtex_files: list[str]):
+def add_bibtex_words(spell: SpellChecker, bibtex_files: list[str]) -> None:
     """Add words from bibtex files to the spell checker."""
 
     if list is None:
@@ -356,7 +387,7 @@ def add_bibtex_words(spell: SpellChecker, bibtex_files: list[str]):
         bibtex_loader.add_bibtex(spell, bibtex_file)
 
 
-def output_results(args, bad_words):
+def output_results(args: Namespace, bad_words: list[list]) -> None:
     """Output the results of the spell check."""
 
     print("\nBad words\n" if not args.miss else "", end="")
@@ -385,7 +416,7 @@ def output_results(args, bad_words):
     print(f"\n{len(bad_words)} misspellings found")
 
 
-def setup_logger(args):
+def setup_logger(args: Namespace) -> logging.Logger:
     """Sets up a logger that outputs to the console."""
 
     level = logging.INFO
@@ -421,7 +452,7 @@ def setup_logger(args):
     return logger
 
 
-def comment_spell_check(args):
+def comment_spell_check(args: Namespace) -> None:
     """comment_spell_check main function."""
     logger = setup_logger(args)
 
@@ -503,7 +534,7 @@ def comment_spell_check(args):
     sys.exit(len(bad_words))
 
 
-def main():
+def main() -> None:
     """Parse the command line arguments and call the spell checking function."""
     args = parseargs.parse_args()
     comment_spell_check(args)
