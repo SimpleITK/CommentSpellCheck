@@ -8,6 +8,8 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: track-clones-${{ github.ref }}
 jobs:
   track-clones:
     runs-on: ubuntu-latest
