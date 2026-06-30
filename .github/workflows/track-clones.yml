@@ -57,19 +57,23 @@ jobs:
           else:
               data = {"records": []}
 
-          # Merge new daily records, avoiding duplicates by timestamp
-          existing_timestamps = {r["timestamp"] for r in data["records"]}
+          # Merge new daily records, upserting by timestamp (GitHub may adjust recent days)
+          existing_by_timestamp = {r["timestamp"]: r for r in data["records"]}
           added = 0
+          updated = 0
           for clone in api_data.get("clones", []):
-              if clone["timestamp"] not in existing_timestamps:
-                  data["records"].append({
-                      "timestamp": clone["timestamp"],
-                      "count": clone["count"],
-                      "uniques": clone["uniques"],
-                  })
-                  existing_timestamps.add(clone["timestamp"])
+              ts = clone["timestamp"]
+              if ts in existing_by_timestamp:
+                  rec = existing_by_timestamp[ts]
+                  if rec.get("count") != clone["count"] or rec.get("uniques") != clone["uniques"]:
+                      rec["count"] = clone["count"]
+                      rec["uniques"] = clone["uniques"]
+                      updated += 1
+              else:
+                  rec = {"timestamp": ts, "count": clone["count"], "uniques": clone["uniques"]}
+                  data["records"].append(rec)
+                  existing_by_timestamp[ts] = rec
                   added += 1
-
           # Keep records sorted chronologically
           data["records"].sort(key=lambda x: x["timestamp"])
 
