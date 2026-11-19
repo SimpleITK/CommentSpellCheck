@@ -28,16 +28,9 @@ def add_bibtex(spell: spellchecker.SpellChecker, filename: str):
 
     word_list = []
 
-    if hasattr(bibtexparser, "parse_file"):
-        bib_database = bibtexparser.parse_file(filename)
-        entry_keys = (entry.key for entry in bib_database.entries)
-    else:
-        with open(filename, "rt", encoding="utf-8") as biblatex_file:
-            bib_database = bibtexparser.load(biblatex_file)
-        entry_keys = bib_database.get_entry_dict()
-
-    for key in entry_keys:
-        words = split_bibtex_name(key)
+    bib_database = bibtexparser.parse_file(filename)
+    for entry in bib_database.entries:
+        words = split_bibtex_name(entry.key)
         word_list.extend(words)
 
     logger.info("Words: %s", word_list)

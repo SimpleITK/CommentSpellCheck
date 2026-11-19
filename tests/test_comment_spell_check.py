@@ -20,6 +20,11 @@
 
 import unittest
 import subprocess
+from pathlib import Path
+
+from spellchecker import SpellChecker
+
+from comment_spell_check.utils.bibtex_loader import add_bibtex
 
 
 class TestCommentSpellCheck(unittest.TestCase):
@@ -104,6 +109,15 @@ class TestCommentSpellCheck(unittest.TestCase):
             check=False,
         )
         self.assertEqual(runresult.returncode, 0, runresult.stdout)
+
+    def test_bibtex_citation_keys_added_to_dictionary(self):
+        spell = SpellChecker()
+        citation_words = {"lowekamp", "yaniv", "simpleitk", "yushkevich"}
+        self.assertEqual(spell.unknown(citation_words), citation_words)
+        bibtex_file = Path(__file__).with_name("itk.bib")
+        add_bibtex(spell, str(bibtex_file))
+
+        self.assertEqual(spell.unknown(citation_words), set())
 
     def test_url(self):
         """URL test"""
