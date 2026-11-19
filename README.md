@@ -7,9 +7,31 @@ The CommentSpellCheck (CSC) package provides a script that automatically
 spell checks the comments of a code base.  It was originally developed to
 be run on the SimpleITK and ITK code bases.
 
+## Installation
+
+Install the package from PyPI with:
+
+    python -m pip install comment-spell-check
+
+This installs the `comment_spell_check` command, used in the example below.
+
+To use CommentSpellCheck as a pre-commit hook, add the following to your
+`.pre-commit-config.yaml`, replacing `vX.Y.Z` with the release tag you want:
+
+```yaml
+repos:
+- repo: https://github.com/SimpleITK/CommentSpellCheck
+  rev: vX.Y.Z
+  hooks:
+  - id: comment-spell-check
+```
+
+Pre-commit installs this hook from the GitHub repository; a separate PyPI
+installation is not needed for the hook.
+
 Here is how it is typically run:
 
-    python comment_spell_check.py --exclude Ancillary $SIMPLEITK_SOURCE_DIR/Code
+    comment_spell_check --exclude Ancillary $SIMPLEITK_SOURCE_DIR/Code
 
 This command will recursively find all the \'.h\' files in a directory,
 extract the C/C++ comments from the code, and run a spell checker on them.
