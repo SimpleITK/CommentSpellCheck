@@ -28,12 +28,10 @@ def add_bibtex(spell: spellchecker.SpellChecker, filename: str):
 
     word_list = []
 
-    with open(filename, "rt", encoding="utf-8") as biblatex_file:
-        bib_database = bibtexparser.load(biblatex_file)
+    bib_database = bibtexparser.parse_file(filename)
+    for entry in bib_database.entries:
+        words = split_bibtex_name(entry.key)
+        word_list.extend(words)
 
-        for k in bib_database.get_entry_dict().keys():
-            words = split_bibtex_name(k)
-            word_list.extend(words)
-
-        logger.info("Words: %s", word_list)
-        spell.word_frequency.load_words(word_list)
+    logger.info("Words: %s", word_list)
+    spell.word_frequency.load_words(word_list)

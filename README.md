@@ -78,3 +78,6 @@ used the pyenchant package and its default dictionary. The pyenchant package
 requires an underlying C library, which is not available on all platforms.
 PySpellChecker is a pure Python package and works on all platforms with no
 additional dependencies.
+
+The `--bibtex` option adds words from citation keys to the dictionary and
+requires bibtexparser 2.x.
