@@ -1,7 +1,14 @@
 
-# Dave's Release Notes
+# Release Process
 
-Use Github's release mechanism to create a new release.
-Do not do it from the command line.  Use the web interface.
+Create an annotated tag for the release, then push it to the repository. For
+example:
 
-Dave is dumb.  Do not be Dave.
+```sh
+git tag -a v0.4.5 -m "Release v0.4.5"
+git push upstream v0.4.5
+```
+
+Replace `upstream` with the name of the remote you push releases to. Pushing a
+`v*` tag triggers the publish workflow, which creates a GitHub release titled
+`Release v0.4.5` and generates its release notes.
