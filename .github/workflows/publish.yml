@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to repair'
+        required: true
+        type: string
 
 concurrency:
   group: publish
@@ -11,19 +17,21 @@ concurrency:
 
 jobs:
   publish:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    name: Upload release to Github Releases and PyPI
+    name: Upload release to GitHub Releases
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: write
     environment: publish
+    env:
+      TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        ref: refs/tags/${{ env.TAG_NAME }}
     - name: Set up Python 3.12
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.12"
     - name: Build package
@@ -37,5 +45,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release create ${{ github.ref_name }} --repo ${{ github.repository }} --verify-tag --generate-notes --title "Release ${{ github.ref_name }}"
-        gh release upload ${{ github.ref_name }} --repo ${{ github.repository }} dist/*
+        if gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+          gh release edit "$TAG_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --title "Release $TAG_NAME"
+        else
+          gh release create "$TAG_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes --title "Release $TAG_NAME"
+        fi
+        gh release upload "$TAG_NAME" --repo "$GITHUB_REPOSITORY" --clobber dist/*
